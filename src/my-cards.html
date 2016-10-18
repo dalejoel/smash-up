@@ -9,28 +9,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="card-group.html">
 
 <dom-module id="my-cards">
   <template>
-    <style include="shared-styles iron-flex iron-flex-alignment">
-      :host {
-        display: block;
+    <template is="dom-bind">
 
-        padding: 10px;
-      }
-    </style>
-    <div class="layout horizontal wrap">
-    <card-group title="Base Game Deck" decks='["Zombies", "Pirates", "Ninjas"]'></card-group>
-    <card-group title="Base Game Deck" decks='["Zombies", "Pirates", "Ninjas"]'></card-group>
-    <card-group title="Base Game Deck" decks='["Zombies", "Pirates", "Ninjas"]'></card-group>
-    <card-group title="Base Game Deck" decks='["Zombies", "Pirates", "Ninjas"]'></card-group>
-    <card-group title="Base Game Deck" decks='["Zombies", "Pirates", "Ninjas"]'></card-group>
-    </div>
+        <iron-ajax
+                auto
+                url="./cards.json"
+                last-response="{{data}}"
+                handleAs="json">
+        </iron-ajax>
+
+
+
+        <style include="shared-styles iron-flex iron-flex-alignment">
+        :host {
+            display: block;
+
+            padding: 10px;
+        }
+        </style>
+        <div class="layout horizontal wrap">       
+            <template is="dom-repeat" items="{{data.CardGroups}}">
+                <card-group title="{{item.GroupTitle}}" decks="{{item.Decks}}"></card-group>
+            </template>
+        </div>     
+    </template>
   </template>
-
   <script>
     Polymer({
       is: 'my-cards'

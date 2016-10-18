@@ -27,7 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <label class="title"><input type="checkbox">{{title}}</label>
+    <label class="title"><input id="titleCheck" on-change="_titleCheckChange" type="checkbox">{{title}}</label>
     <selectable-decks id="selectableDecks" titles={{decks}}></selectable-decks>
   </template>
 
@@ -55,6 +55,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       
       _cardGroupChange: function(cardGroups) {
         // Recreate the individual cards
+      },
+      
+      _titleCheckChange: function(value) {
+          // Call change all on selectable decks element
+          this.$.selectableDecks.updateSelectionAll(this.$.titleCheck.checked);
       }
     });
   </script>

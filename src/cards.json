@@ -1,0 +1,43 @@
+{
+    "CardGroups": [
+    {
+        "GroupTitle": "Smash Up Core Decks",
+        "Decks":["Pirates", "Ninja", "Zombies", "Robots", "Dinosaurs", "Wizards", "Tricksters", "Alients"]
+    },
+    {
+        "GroupTitle": "The Obligatory Cthulhu Set",
+        "Decks":["Elder Things", "Innsmouth", "Cthulhu Cultists", "Miskatonic University"]
+    },
+    {
+        "GroupTitle": "Awesome Level 9000",
+        "Decks":["Bear Cavalry", "Ghosts", "Killer Plants", "Steampunks"]
+    },
+    {
+        "GroupTitle": "Science Fiction Double Feature",
+        "Decks":["Cyborg Apes", "Shape Shifters", "Super Spies", "Time Travelers"]
+    },
+    {
+        "GroupTitle": "Monster Smash",
+        "Decks":["Giant Ants", "Mad Scientists", "Vampires", "Werewolves"]
+    },
+    {
+        "GroupTitle": "Pretty Pretty Smash Up",
+        "Decks":["Fairies", "Kitty Cats", "Mythic Horses", "Princesses"]
+    },
+    {
+        "GroupTitle": "Munchkin",
+        "Decks":["Clerics", "Dwarves", "Elves", "Halflings", "Mages", "Orcs", "Thieves", "Warriors"]
+    },
+    {
+        "GroupTitle": "It's Your Fault",
+        "Decks":["Dragons", "Mythic Greeks", "Sharks", "Superheroes", "Tornadoes"]
+    },
+    {
+        "GroupTitle": "Cease & Desist",
+        "Decks":["Star Roamers", "Astro Knights", "Changerbots", "Ignobles"]
+    },
+    {
+        "GroupTitle": "The Big Geeky Box",
+        "Decks":["Geek and Sundry"]
+    }]
+}
