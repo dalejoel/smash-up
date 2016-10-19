@@ -45,6 +45,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               checkBox.checked = checkValue;
           }
       },
+      getSelected: function(){
+         var arrayOfChecked = new Array();
+         for (var namedCheckBox in this.titles){
+              var currentCheckBoxName = this.titles[namedCheckBox];
+              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
+              var checkBox = this.$$(elementName);
+              if(checkBox.checked){
+                  arrayOfCheck.push(currentCheckBoxName);
+              }
+         }
+
+        return arrayOfCheck;
+      },
       _removeWhiteSpace(value){
           var final = value.replace(/ /g, '');
           return final;

@@ -52,6 +52,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        // this.$.selectableDecks.addDeck("pushed Zombies");
        // this.$.selectableDecks.addDeck("pushed Pirates");
       },
+      getSelected: function(){
+        return this.$.selectableDecks.getSelected();
+      },
       
       _cardGroupChange: function(cardGroups) {
         // Recreate the individual cards
