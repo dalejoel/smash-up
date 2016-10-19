@@ -21,7 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             padding: 10px;
         }
         </style>
-        <div><label><input id="{{item}}" type="checkbox">{{item}}</label></div>
+        <div><label><input id="{{_removeWhiteSpace(item)}}" type="checkbox">{{item}}</label></div>
     </template>
   </template>
   <script>
@@ -40,10 +40,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       updateSelectionAll: function(checkValue){
           for (var namedCheckBox in this.titles){
               var currentCheckBoxName = this.titles[namedCheckBox];
-              var checkBox = this.$$('#' + currentCheckBoxName);
+              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
+              var checkBox = this.$$(elementName);
               checkBox.checked = checkValue;
           }
-      }    
+      },
+      _removeWhiteSpace(value){
+          var final = value.replace(/ /g, '');
+          return final;
+      }  
     });
   </script>
 </dom-module>
