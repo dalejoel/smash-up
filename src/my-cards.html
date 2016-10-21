@@ -43,7 +43,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
   <script>
     Polymer({
-      is: 'my-cards'
+      is: 'my-cards',
+      ready: function() {
+          console.log(_removeWhiteSpace2("my-cards is ready"));
+       // this.$.selectableDecks.addDeck("pushed Zombies");
+       // this.$.selectableDecks.addDeck("pushed Pirates");
+      },
+      _removeWhiteSpace2(value){
+          console.log("remove white space called");
+          var final = value.replace(/ /g, '');
+          return final;
+      } 
     });
   </script>
 </dom-module>
