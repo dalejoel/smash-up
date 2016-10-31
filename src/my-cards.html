@@ -16,17 +16,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-cards">
   <template>
-    <template is="dom-bind">
-
         <iron-ajax
                 auto
                 url="./cards.json"
                 last-response="{{data}}"
                 handleAs="json">
         </iron-ajax>
-
-
-
+        
         <style include="shared-styles iron-flex iron-flex-alignment">
         :host {
             display: block;
@@ -36,21 +32,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </style>
         <div class="layout horizontal wrap">       
             <template is="dom-repeat" items="{{data.CardGroups}}">
-                <card-group title="{{item.GroupTitle}}" decks="{{item.Decks}}"></card-group>
+                <card-group title="{{_removeWhiteSpace(item.GroupTitle)}}" decks="{{item.Decks}}"></card-group>
             </template>
         </div>     
-    </template>
+ 
   </template>
   <script>
     Polymer({
       is: 'my-cards',
       ready: function() {
-          console.log(_removeWhiteSpace2("my-cards is ready"));
+          console.log("my-cards is ready");
        // this.$.selectableDecks.addDeck("pushed Zombies");
        // this.$.selectableDecks.addDeck("pushed Pirates");
       },
-      _removeWhiteSpace2(value){
-          console.log("remove white space called");
+      getSelectedCards: function(){
+         var arrayOfChecked = new Array();
+         for (var namedCheckBox in data.CardGroups){
+              var currentCheckBoxName = data[namedCheckBox];
+              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
+              var checkBoxGroup = this.$$(elementName);
+              arrayOfChecked.push(checkBoxGroup.getSelected());
+         }
+
+        return arrayOfCheck;
+      },
+      _removeWhiteSpace(value){
           var final = value.replace(/ /g, '');
           return final;
       } 
