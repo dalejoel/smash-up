@@ -21,6 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="my-icons.html">
+<link rel="import" href="my-cards.html">
+<link rel="import" href="my-players.html">
 
 <dom-module id="my-app">
   <template>
@@ -97,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             attr-for-selected="name"
             fallback-selection="view404"
             role="main">
-          <my-players id="playerControl" name="players"></my-players>
+          <my-players id="playercontrol" name="players"></my-players>
           <my-view2 name="view2"></my-view2>
           <my-view3 name="view3"></my-view3>
           <my-new-view name="new-view"></my-new-view>
@@ -125,8 +127,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
       ready: function(){
         console.log("my-app is ready");
-        //var innerSelection = this.$.cards.getSelected;
-        //this.$.playerControl.assignGetSelected(innerSelection);
+        var innerSelection = this.$.cards.getSelectedCards;
+        this.$.playercontrol.assignGetSelected(innerSelection);
       },
       observers: [
         '_routePageChanged(routeData.page)'

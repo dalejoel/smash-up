@@ -55,11 +55,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
               var checkBox = this.$$(elementName);
               if(checkBox.checked){
-                  arrayOfCheck.push(currentCheckBoxName);
+                  arrayOfChecked.push(currentCheckBoxName);
               }
          }
 
-        return arrayOfCheck;
+        return arrayOfChecked;
       },
       _removeWhiteSpace(value){
           var final = value.replace(/ /g, '');

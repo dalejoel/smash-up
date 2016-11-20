@@ -20,7 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="my-players">
   <template>
-    <style include="shared-styles iron-flex iron-flex-alignment"">
+    <style include="shared-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
 
@@ -64,17 +64,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     Polymer({
       is: 'my-players',
- /*    properties: {
-          _players: {
+      properties: {
+          decks: {
               type: Array,
               readOnly: false,
               notify: true
           }
       },
-      */
+    
       ready: function(){console.log("my-players is ready"); this._players = []},
       assignGetSelected: function(getSelectedFunction){
-        //this._getSelected = getSelectedFunction;
+        this._getSelected = getSelectedFunction;
       },
       // first argument is the change record for the array change,
       // change.base is the array specified in the binding
@@ -83,18 +83,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // relative to a root object.
         return this.get(path, change.base[index]);
       },
+
       _tapHandler: function(){
         var numbOfPlayers = this._getNumberOfPlayers();
+        this._getSelected();
         var tempPlayers = [];
         if(numbOfPlayers != "0"){
           var arrayLength = this._players.length;
           for (var i = 0; i < arrayLength; i++) {
-            var currentItem = this._players.pop();
+           var currentItem = this.shift('_players');
             currentItem.deck1 = currentItem.name + "_deck1";
             currentItem.deck2 = currentItem.name + "_deck2";
-            this._players.push(currentItem);
+           // var propName = '_players[' + i + "].name";
+           // this._players[i].deck1 = 'direct change';
+           // this.set('_players[0].deck1', 'changes');
+           // var i = 0;
+
+//            this.set(propName, this._players.i.name+'_deck1');
+
+            this.push('_players', { name: currentItem.name, deck1: 'change', deck2: 'change 2'});
           }
-          //this._players = tempPlayers;
         }
         console.log("button tapped");
       },
@@ -107,6 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
       _getSelected: function(){ console.log("getSelected Not assigned"); },
+      
       _playersSelected: function(theEvent){
         var playerArray = [];
         var theValue = this._getNumberOfPlayers();

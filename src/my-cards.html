@@ -30,9 +30,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             padding: 10px;
         }
         </style>
+        <div>
+            <paper-button class="button" raised on-tap="getSelectedCards">Pick Cards</paper-button>
+        </div>
         <div class="layout horizontal wrap">       
             <template is="dom-repeat" items="{{data.CardGroups}}">
-                <card-group title="{{_removeWhiteSpace(item.GroupTitle)}}" decks="{{item.Decks}}"></card-group>
+                <card-group id="cardgroup" title="{{_removeWhiteSpace(item.GroupTitle)}}" decks="{{item.Decks}}"></card-group>
             </template>
         </div>     
  
@@ -40,19 +43,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     Polymer({
       is: 'my-cards',
+      properties: {
+          _that: {
+              type: Object,
+              readOnly: true,
+              notify: false
+        }
+      },      
       ready: function() {
           console.log("my-cards is ready");
-       // this.$.selectableDecks.addDeck("pushed Zombies");
-       // this.$.selectableDecks.addDeck("pushed Pirates");
+          _that = this;
       },
       getSelectedCards: function(){
-         var arrayOfChecked = new Array();
-         for (var namedCheckBox in data.CardGroups){
-              var currentCheckBoxName = data[namedCheckBox];
-              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
-              var checkBoxGroup = this.$$(elementName);
-              arrayOfChecked.push(checkBoxGroup.getSelected());
-         }
+         // Get all groups
+         var arrayOfCheck = new Array();
+         var groups = Polymer.dom(_that.root).querySelectorAll('#cardgroup');
+
+         groups.forEach(function(aGroup){
+            var currentSelected = aGroup.getSelected();
+             currentSelected.forEach(function(element){
+                arrayOfCheck.push(element);
+         });
+         });
+    /*     for (var elementPosition in groups){
+             var currentGroup = groups[elementPosition];
+             var currentSelected = currentGroup.getSelected();
+             currentSelected.forEach(function(element){
+                arrayOfCheck.push(element);
+             });*/
+         
 
         return arrayOfCheck;
       },
