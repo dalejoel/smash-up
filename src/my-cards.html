@@ -30,9 +30,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             padding: 10px;
         }
         </style>
-        <div>
-            <paper-button class="button" raised on-tap="getSelectedCards">Pick Cards</paper-button>
-        </div>
         <div class="layout horizontal wrap">       
             <template is="dom-repeat" items="{{data.CardGroups}}">
                 <card-group id="cardgroup" title="{{_removeWhiteSpace(item.GroupTitle)}}" decks="{{item.Decks}}"></card-group>
@@ -51,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },      
       ready: function() {
-          console.log("my-cards is ready");
+          //console.log("my-cards is ready");
           _that = this;
       },
       getSelectedCards: function(){
@@ -60,19 +57,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          var groups = Polymer.dom(_that.root).querySelectorAll('#cardgroup');
 
          groups.forEach(function(aGroup){
-            var currentSelected = aGroup.getSelected();
-             currentSelected.forEach(function(element){
-                arrayOfCheck.push(element);
-         });
-         });
-    /*     for (var elementPosition in groups){
-             var currentGroup = groups[elementPosition];
-             var currentSelected = currentGroup.getSelected();
-             currentSelected.forEach(function(element){
-                arrayOfCheck.push(element);
-             });*/
-         
-
+                var currentSelected = aGroup.getSelected();
+                currentSelected.forEach(function(element){
+                    arrayOfCheck.push(element);
+                    });
+                });
         return arrayOfCheck;
       },
       _removeWhiteSpace(value){

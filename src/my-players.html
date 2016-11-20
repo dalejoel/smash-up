@@ -72,7 +72,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
       },
     
-      ready: function(){console.log("my-players is ready"); this._players = []},
+      ready: function(){
+        //console.log("my-players is ready"); 
+        this._players = [];
+        },
       assignGetSelected: function(getSelectedFunction){
         this._getSelected = getSelectedFunction;
       },
@@ -86,25 +89,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _tapHandler: function(){
         var numbOfPlayers = this._getNumberOfPlayers();
-        this._getSelected();
-        var tempPlayers = [];
-        if(numbOfPlayers != "0"){
-          var arrayLength = this._players.length;
-          for (var i = 0; i < arrayLength; i++) {
-           var currentItem = this.shift('_players');
-            currentItem.deck1 = currentItem.name + "_deck1";
-            currentItem.deck2 = currentItem.name + "_deck2";
-           // var propName = '_players[' + i + "].name";
-           // this._players[i].deck1 = 'direct change';
-           // this.set('_players[0].deck1', 'changes');
-           // var i = 0;
+        var selectedDecks = this._getSelected();
 
-//            this.set(propName, this._players.i.name+'_deck1');
-
-            this.push('_players', { name: currentItem.name, deck1: 'change', deck2: 'change 2'});
-          }
+        if(numbOfPlayers * 2 > selectedDecks.length){
+          alert("You have not chosen enough decks to distribute to " + numbOfPlayers + " players.")
         }
-        console.log("button tapped");
+        else{
+          // select the correct number of decks randomly
+          var finalRandomizedSelctions = new Array();
+          for(var counter = 0; counter < numbOfPlayers * 2; counter++){
+              var chosenDeckPosition = this._getRandomInt(0, selectedDecks.length);
+              finalRandomizedSelctions.push(selectedDecks[chosenDeckPosition]);
+              selectedDecks.splice(chosenDeckPosition, 1);
+
+          }
+          // Add players with decks chosen
+          var tempPlayers = [];
+            var arrayLength = this._players.length;
+            for (var i = 0; i < arrayLength; i++) {
+              var currentItem = this.shift('_players');
+              this.push('_players', { name: currentItem.name, deck1: finalRandomizedSelctions.shift(), deck2: finalRandomizedSelctions.shift()});
+            }
+          
+        }
+      },
+      /**
+      * Returns a random integer between min (inclusive) and max (exclusive)
+      * Using Math.round() will give you a non-uniform distribution!
+      */
+      _getRandomInt: function(min, max) {
+          return Math.floor(Math.random() * (max - min)) + min;
       },
       _getNumberOfPlayers(){
         if(this.$.playerMenu.selectedItem){
@@ -120,7 +134,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var playerArray = [];
         var theValue = this._getNumberOfPlayers();
         for(i = 1; i <= theValue; i++){
-          playerArray.push({name: i, deck1: "choose more decks", deck2: "choose more"});
+          playerArray.push({name: i, deck1: "choose a deck", deck2: "choose a second deck"});
         }
         this._players = playerArray;
 
