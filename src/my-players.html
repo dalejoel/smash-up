@@ -39,7 +39,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="layout horizontal">
           <paper-dropdown-menu id="playerMenu" label="How many players" on-iron-select="_playersSelected" attr-for-selected="value">
             <paper-listbox class="dropdown-content">
-              <paper-item value="1">1</paper-item>
               <paper-item value="2">2</paper-item>
               <paper-item value="3">3</paper-item>
               <paper-item value="4">4</paper-item>
@@ -47,13 +46,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <paper-item value="6">6</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
-          <paper-button class="button" raised on-tap="_tapHandler">Pick Cards</paper-button>
+          <paper-button class="button" id="pickButton" raised on-tap="_tapHandler">Pick Cards</paper-button>
       </div>
     </div>
       <div class="layout horizontal wrap">
          <template is="dom-repeat" items="{{_players}}">
            <div class="layout vertical player">
-            <iron-label>Player [[item.name]]</iron-label>
+            <iron-label>[[item.name]]</iron-label>
             <iron-label class="deckname">{{item.deck1}}</iron-label>
             <iron-label class="deckname">[[item.deck2]]</iron-label>
            </div>
@@ -74,6 +73,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     
       ready: function(){
         //console.log("my-players is ready"); 
+        var btn = this.$.pickButton;
+        btn.disabled = true;
         this._players = [];
         },
       assignGetSelected: function(getSelectedFunction){
@@ -104,11 +105,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           }
           // Add players with decks chosen
-          var tempPlayers = [];
-            var arrayLength = this._players.length;
-            for (var i = 0; i < arrayLength; i++) {
-              var currentItem = this.shift('_players');
-              this.push('_players', { name: currentItem.name, deck1: finalRandomizedSelctions.shift(), deck2: finalRandomizedSelctions.shift()});
+          this._players = [];
+          for (var i = 0; i < numbOfPlayers; i++) {
+              var currentName = "Player " + (i+1);
+              this.push('_players', { name: currentName, deck1: finalRandomizedSelctions.shift(), deck2: finalRandomizedSelctions.shift()});
             }
           
         }
@@ -131,12 +131,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getSelected: function(){ console.log("getSelected Not assigned"); },
       
       _playersSelected: function(theEvent){
-        var playerArray = [];
+        this.$.pickButton.disabled = false;
+     /*   var playerArray = [];
         var theValue = this._getNumberOfPlayers();
         for(i = 1; i <= theValue; i++){
           playerArray.push({name: i, deck1: "choose a deck", deck2: "choose a second deck"});
         }
-        this._players = playerArray;
+        this._players = playerArray;*/
 
     }});
   </script>
