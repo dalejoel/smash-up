@@ -1,0 +1,70 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="selectable-decks">
+ <template>
+    <template is="dom-repeat" items="{{titles}}">
+        <style include="shared-styles">
+        :host {
+            display: block;
+
+            padding: 10px;
+        }
+        </style>
+        <div><label><input id="{{_removeWhiteSpace(item)}}" type="checkbox">{{item}}</label></div>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'selectable-decks',
+      properties: {
+        titles: {
+          type: Array,
+          reflectToAttribute: true,
+          value: function() { return []; }
+        }
+      },
+      addDeck: function(deck) {
+        this.push('titles', deck);
+      },
+      ready: function(){
+          //console.log("selectable-decks is ready");
+      },
+      updateSelectionAll: function(checkValue){
+          for (var namedCheckBox in this.titles){
+              var currentCheckBoxName = this.titles[namedCheckBox];
+              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
+              var checkBox = this.$$(elementName);
+              checkBox.checked = checkValue;
+          }
+      },
+      getSelected: function(){
+         var arrayOfChecked = new Array();
+         for (var namedCheckBox in this.titles){
+              var currentCheckBoxName = this.titles[namedCheckBox];
+              var elementName = '#' + currentCheckBoxName.replace(/ /g,'');
+              var checkBox = this.$$(elementName);
+              if(checkBox.checked){
+                  arrayOfChecked.push(currentCheckBoxName);
+              }
+         }
+
+        return arrayOfChecked;
+      },
+      _removeWhiteSpace(value){
+          var final = value.replace(/ /g, '');
+          return final;
+      }  
+    });
+  </script>
+</dom-module>

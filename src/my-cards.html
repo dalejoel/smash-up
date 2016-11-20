@@ -1,0 +1,73 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="card-group.html">
+
+<dom-module id="my-cards">
+  <template>
+        <iron-ajax
+                auto
+                url="./cards.json"
+                last-response="{{data}}"
+                handleAs="json">
+        </iron-ajax>
+        
+        <style include="shared-styles iron-flex iron-flex-alignment">
+        :host {
+            display: block;
+
+            padding: 10px;
+        }
+        </style>
+        <div class="layout horizontal wrap">       
+            <template is="dom-repeat" items="{{data.CardGroups}}">
+                <card-group id="cardgroup" title="{{item.GroupTitle}}" decks="{{item.Decks}}"></card-group>
+            </template>
+        </div>     
+ 
+  </template>
+  <script>
+    Polymer({
+      is: 'my-cards',
+      properties: {
+          _that: {
+              type: Object,
+              readOnly: true,
+              notify: false
+        }
+      },      
+      ready: function() {
+          //console.log("my-cards is ready");
+          _that = this;
+      },
+      getSelectedCards: function(){
+         // Get all groups
+         var arrayOfCheck = new Array();
+         var groups = Polymer.dom(_that.root).querySelectorAll('#cardgroup');
+
+         groups.forEach(function(aGroup){
+                var currentSelected = aGroup.getSelected();
+                currentSelected.forEach(function(element){
+                    arrayOfCheck.push(element);
+                    });
+                });
+        return arrayOfCheck;
+      },
+      _removeWhiteSpace(value){
+          var final = value.replace(/ /g, '');
+          return final;
+      } 
+    });
+  </script>
+</dom-module>
