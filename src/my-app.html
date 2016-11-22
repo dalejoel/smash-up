@@ -115,7 +115,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         page: {
           type: String,
           reflectToAttribute: true,
-          observer: '_pageChanged'
+          observer: '_pageChanged',
+          value: 'cards'
         },
         selectedDecks: {
           type: Array,
@@ -126,6 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log("my-app is ready");
         var innerSelection = this.$.cards.getSelectedCards;
         this.$.playercontrol.assignGetSelected(innerSelection);
+        this.page = 'cards';
       },
       observers: [
         '_routePageChanged(routeData.page)'
