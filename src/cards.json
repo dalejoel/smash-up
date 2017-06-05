@@ -37,6 +37,10 @@
         "Decks":["Star Roamers", "Astro Knights", "Changerbots", "Ignobles"]
     },
     {
+        "GroupTitle": "What Were We Thinking?",
+        "Decks":["Teddybears", "Grandmas", "Rock Stars", "Explorers"]
+    },        
+    {
         "GroupTitle": "The Big Geeky Box",
         "Decks":["Geek and Sundry"]
     }]
