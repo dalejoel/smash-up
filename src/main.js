@@ -182,7 +182,7 @@ function getBadPartners(deckName) {
 // Fetch cards metadata
 async function loadCards() {
   try {
-    const response = await fetch('./src/cards.json');
+    const response = await fetch('./cards.json');
     if (!response.ok) {
       throw new Error(`Failed to fetch cards: ${response.statusText}`);
     }
