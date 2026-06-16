@@ -162,12 +162,13 @@ const customDeckIcons = {
   "Clowns": "images/covers/clowns.png"
 };
 
-function getDeckIconHtml(deckName, locationClass = "deck-icon-img") {
+function getDeckIconHtml(deckName, locationClass = "deck-icon-img", enableClick = true) {
   const norm = deckName.trim();
   const customImg = customDeckIcons[norm];
   if (customImg) {
     const resolved = resolveImagePath(customImg);
-    return `<img src="${resolved}" alt="${deckName} Icon" class="${locationClass}" onclick="event.stopPropagation(); openDeckArtModal('${norm.replace(/'/g, "\\'")}')" referrerPolicy="no-referrer" />`;
+    const clickAttr = enableClick ? `onclick="event.stopPropagation(); event.preventDefault(); openDeckArtModal('${norm.replace(/'/g, "\\'")}')"` : '';
+    return `<img src="${resolved}" alt="${deckName} Icon" class="${locationClass}" ${clickAttr} referrerPolicy="no-referrer" />`;
   }
   return `<span class="deck-icon-emoji">${getEmojiForDeck(deckName)}</span>`;
 }
@@ -418,12 +419,12 @@ function openExpansionModal(group) {
     const item = document.createElement('div');
     item.className = 'modal-deck-desc-item';
     
-    const emoji = getEmojiForDeck(deck);
+    const iconHtml = getDeckIconHtml(deck, "deck-icon-img", false);
     const desc = deckDescriptions[deck] || "No description available for this faction.";
     
     item.innerHTML = `
       <div class="modal-deck-desc-header">
-        <span class="modal-deck-emoji">${emoji}</span>
+        <span class="modal-deck-emoji">${iconHtml}</span>
         <span class="modal-deck-name">${deck}</span>
       </div>
       <div class="modal-deck-desc-body">${desc}</div>
