@@ -194,6 +194,16 @@ function resolveImagePath(path) {
   return path;
 }
 
+function getDeckSourceInfo(deckName) {
+  if (!cardData || !cardData.CardGroups) return '';
+  const group = cardData.CardGroups.find(g => g.Decks.includes(deckName));
+  if (!group) return '';
+  if (group.Decks.length === 1) {
+    return 'Solo Deck';
+  }
+  return group.GroupTitle;
+}
+
 // Fetch cards metadata
 async function loadCards() {
   try {
@@ -242,6 +252,9 @@ function renderExpansions() {
       card.appendChild(imgWrapper);
     }
 
+    // Check if group is a solo deck
+    const isSolo = group.Decks.length === 1;
+
     // Header with master checkbox
     const titleBar = document.createElement('div');
     titleBar.className = 'expansion-title-bar';
@@ -249,84 +262,107 @@ function renderExpansions() {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = `expansion-check-${index}`;
-    
-    // Check if all decks in group are selected
-    const allDecksSelected = group.Decks.every(deck => selectedDecks.has(deck));
-    checkbox.checked = allDecksSelected;
-    checkbox.indeterminate = !allDecksSelected && group.Decks.some(deck => selectedDecks.has(deck));
 
-    const label = document.createElement('span');
+    const label = document.createElement('label');
+    label.setAttribute('for', checkbox.id);
     label.className = 'expansion-title';
     label.textContent = group.GroupTitle;
+    label.style.cursor = 'pointer';
 
     titleBar.appendChild(checkbox);
     titleBar.appendChild(label);
     card.appendChild(titleBar);
 
-    // List of decks
-    const list = document.createElement('div');
-    list.className = 'deck-list';
+    if (isSolo) {
+      const singleDeck = group.Decks[0];
+      const isSelected = selectedDecks.has(singleDeck);
+      checkbox.checked = isSelected;
+      if (isSelected) {
+        card.classList.add('selected-card');
+      }
 
-    group.Decks.forEach(deck => {
-      const isSelected = selectedDecks.has(deck);
-      const item = document.createElement('label');
-      item.className = `deck-item ${isSelected ? 'selected' : ''}`;
-
-      const deckCheck = document.createElement('input');
-      deckCheck.type = 'checkbox';
-      deckCheck.checked = isSelected;
-      
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'deck-name';
-      nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
-
-      item.appendChild(deckCheck);
-      item.appendChild(nameSpan);
-      list.appendChild(item);
-
-      // Event listener for single deck
-      deckCheck.addEventListener('change', () => {
-        if (deckCheck.checked) {
-          selectedDecks.add(deck);
-          item.classList.add('selected');
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          selectedDecks.add(singleDeck);
+          card.classList.add('selected-card');
         } else {
-          selectedDecks.delete(deck);
-          item.classList.remove('selected');
+          selectedDecks.delete(singleDeck);
+          card.classList.remove('selected-card');
         }
-        
-        // Update group master checkbox state
-        const updatedAllSelected = group.Decks.every(d => selectedDecks.has(d));
-        checkbox.checked = updatedAllSelected;
-        checkbox.indeterminate = !updatedAllSelected && group.Decks.some(d => selectedDecks.has(d));
-        
         updateCounts();
       });
-    });
+      container.appendChild(card);
+    } else {
+      // Check if all decks in group are selected
+      const allDecksSelected = group.Decks.every(deck => selectedDecks.has(deck));
+      checkbox.checked = allDecksSelected;
+      checkbox.indeterminate = !allDecksSelected && group.Decks.some(deck => selectedDecks.has(deck));
 
-    card.appendChild(list);
-    container.appendChild(card);
+      // List of decks
+      const list = document.createElement('div');
+      list.className = 'deck-list';
 
-    // Event listener for master checkbox
-    checkbox.addEventListener('change', () => {
-      const checkAll = checkbox.checked;
-      checkbox.indeterminate = false;
+      group.Decks.forEach(deck => {
+        const isSelected = selectedDecks.has(deck);
+        const item = document.createElement('label');
+        item.className = `deck-item ${isSelected ? 'selected' : ''}`;
 
-      const deckItems = list.querySelectorAll('.deck-item');
-      group.Decks.forEach((deck, idx) => {
-        const item = deckItems[idx];
-        const deckCheck = item.querySelector('input[type="checkbox"]');
-        deckCheck.checked = checkAll;
+        const deckCheck = document.createElement('input');
+        deckCheck.type = 'checkbox';
+        deckCheck.checked = isSelected;
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'deck-name';
+        nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
 
-        if (checkAll) {
-          selectedDecks.add(deck);
-          item.classList.add('selected');
-        } else {
-          selectedDecks.delete(deck);
-          item.classList.remove('selected');
-        }
+        item.appendChild(deckCheck);
+        item.appendChild(nameSpan);
+        list.appendChild(item);
+
+        // Event listener for single deck
+        deckCheck.addEventListener('change', () => {
+          if (deckCheck.checked) {
+            selectedDecks.add(deck);
+            item.classList.add('selected');
+          } else {
+            selectedDecks.delete(deck);
+            item.classList.remove('selected');
+          }
+          
+          // Update group master checkbox state
+          const updatedAllSelected = group.Decks.every(d => selectedDecks.has(d));
+          checkbox.checked = updatedAllSelected;
+          checkbox.indeterminate = !updatedAllSelected && group.Decks.some(d => selectedDecks.has(d));
+          
+          updateCounts();
+        });
       });
-      updateCounts();
-    });
+
+      card.appendChild(list);
+      container.appendChild(card);
+
+      // Event listener for master checkbox
+      checkbox.addEventListener('change', () => {
+        const checkAll = checkbox.checked;
+        checkbox.indeterminate = false;
+
+        const deckItems = list.querySelectorAll('.deck-item');
+        group.Decks.forEach((deck, idx) => {
+          const item = deckItems[idx];
+          const deckCheck = item.querySelector('input[type="checkbox"]');
+          deckCheck.checked = checkAll;
+
+          if (checkAll) {
+            selectedDecks.add(deck);
+            item.classList.add('selected');
+          } else {
+            selectedDecks.delete(deck);
+            item.classList.remove('selected');
+          }
+        });
+        updateCounts();
+      });
+    }
   });
 }
 
@@ -422,10 +458,12 @@ function distributeDecks() {
         <div class="deck-badge">
           <span class="deck-badge-icon">${getEmojiForDeck(assignment.deck1)}</span>
           <span class="deck-badge-name">${assignment.deck1}</span>
+          <span class="deck-badge-source" style="font-size: 0.725rem; color: var(--text-secondary); margin-top: 0.35rem; font-weight: 600;">${getDeckSourceInfo(assignment.deck1)}</span>
         </div>
         <div class="deck-badge">
           <span class="deck-badge-icon">${getEmojiForDeck(assignment.deck2)}</span>
           <span class="deck-badge-name">${assignment.deck2}</span>
+          <span class="deck-badge-source" style="font-size: 0.725rem; color: var(--text-secondary); margin-top: 0.35rem; font-weight: 600;">${getDeckSourceInfo(assignment.deck2)}</span>
         </div>
       </div>
     `;

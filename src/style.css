@@ -284,6 +284,11 @@ select:focus {
   box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
+.expansion-card.selected-card {
+  border-color: var(--primary);
+  background: rgba(129, 140, 248, 0.08);
+}
+
 .expansion-title-bar {
   display: flex;
   align-items: center;
