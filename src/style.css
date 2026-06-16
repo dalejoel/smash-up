@@ -792,3 +792,59 @@ input[type="checkbox"] {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* Custom deck icon styling */
+.deck-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.deck-icon-img {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.deck-icon-img:hover {
+  transform: scale(1.25) rotate(2deg);
+  border-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.deck-icon-emoji {
+  font-size: 1.15rem;
+}
+
+/* Adjust deck name alignment in list */
+.deck-name {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+/* Align image in player card results */
+.deck-emoji-circle img.deck-icon-img-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.deck-emoji-circle img.deck-icon-img-circle:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 12px var(--primary-glow);
+}

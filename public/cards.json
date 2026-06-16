@@ -102,17 +102,17 @@
     },
     {
       "GroupTitle": "Goblins Promo Deck",
-      "Image": "images/covers/Micro-SU-Goblins.png",
+      "Image": "images/covers/goblins.png",
       "Decks": ["Goblins"]
     },
     {
       "GroupTitle": "Penguins Promo Deck",
-      "Image": "images/covers/Micro-SU-penguins.png",
+      "Image": "images/covers/penguins.png",
       "Decks": ["Penguins"]
     },
     {
       "GroupTitle": "Knights of the Round Table Promo Deck",
-      "Image": "images/covers/Micro-SU-knights.png",
+      "Image": "images/covers/knightsoftheroundtable.png",
       "Decks": ["Knights of the Round Table"]
     },
     {
@@ -122,8 +122,23 @@
     },
     {
       "GroupTitle": "Teens Promo Deck",
-      "Image": "images/covers/Teens.png",
+      "Image": "images/covers/teens.png",
       "Decks": ["Teens"]
+    },
+    {
+      "GroupTitle": "Sheep Promo Deck",
+      "Image": "images/covers/sheep.png",
+      "Decks": ["Sheep"]
+    },
+    {
+      "GroupTitle": "Slashers Promo Deck",
+      "Image": "images/covers/slashers.png",
+      "Decks": ["Slashers"]
+    },
+    {
+      "GroupTitle": "Clowns Promo Deck",
+      "Image": "images/covers/clowns.png",
+      "Decks": ["Clowns"]
     }
   ]
 }

@@ -137,13 +137,52 @@ const emojiMap = {
   "goblins": "👺",
   "knights of the round table": "🛡️",
   "teens": "🎒",
-  "titans": "🪐"
+  "titans": "🪐",
+  "slashers": "🔪",
+  "clowns": "🤡"
 };
 
 function getEmojiForDeck(deckName) {
   const norm = deckName.toLowerCase().trim();
   return emojiMap[norm] || "🃏";
 }
+
+const customDeckIcons = {
+  "Geeks": "images/covers/geeks.png",
+  "All-Stars": "images/covers/all-stars.png",
+  "Sheep": "images/covers/sheep.png",
+  "Penguins": "images/covers/penguins.png",
+  "Goblins": "images/covers/goblins.png",
+  "Knights of the Round Table": "images/covers/knightsoftheroundtable.png",
+  "Mermaids": "images/covers/mermaids.png",
+  "Skeletons": "images/covers/skeletons.png",
+  "World Champs": "images/covers/worldchamps.png",
+  "Teens": "images/covers/teens.png",
+  "Slashers": "images/covers/slashers.png",
+  "Clowns": "images/covers/clowns.png"
+};
+
+function getDeckIconHtml(deckName, locationClass = "deck-icon-img") {
+  const norm = deckName.trim();
+  const customImg = customDeckIcons[norm];
+  if (customImg) {
+    const resolved = resolveImagePath(customImg);
+    return `<img src="${resolved}" alt="${deckName} Icon" class="${locationClass}" onclick="event.stopPropagation(); openDeckArtModal('${norm.replace(/'/g, "\\'")}')" referrerPolicy="no-referrer" />`;
+  }
+  return `<span class="deck-icon-emoji">${getEmojiForDeck(deckName)}</span>`;
+}
+
+function openDeckArtModal(deckName) {
+  const customImg = customDeckIcons[deckName];
+  if (!customImg) return;
+  openExpansionModal({
+    GroupTitle: deckName,
+    Decks: [deckName],
+    Image: customImg
+  });
+}
+
+window.openDeckArtModal = openDeckArtModal;
 
 // Anti-synergy lists (factions that actively clash or make the game unfun/clunky if paired for a single player)
 const antiSynergyPairs = [
@@ -320,7 +359,10 @@ const deckDescriptions = {
   "Penguins": "Swarms the deck, drawing and playing extra cards from the top.",
   "Knights of the Round Table": "Follows quests and codes of honor to score extra points.",
   "Titans": "Summons massive Titan cards that dominate bases.",
-  "Teens": "Rely on teenage angst, text messages, and mood swings for unexpected shifts."
+  "Teens": "Rely on teenage angst, text messages, and mood swings for unexpected shifts.",
+  "Sheep": "Connects minions together, forming a flock that moves and scores bases in unison.",
+  "Slashers": "Relentlessly hunts down and eliminates opposing minions with horror movie execution tactics.",
+  "Clowns": "Disrupts and mocks opponents, redirecting their attacks and causing chaotic board shifts."
 };
 
 function openExpansionModal(group) {
@@ -549,7 +591,17 @@ function renderExpansions() {
       
       const nameSpan = document.createElement('span');
       nameSpan.className = 'deck-name';
-      nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
+      
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'deck-icon-wrapper';
+      iconSpan.innerHTML = getDeckIconHtml(deck);
+      
+      const textSpan = document.createElement('span');
+      textSpan.className = 'deck-text';
+      textSpan.textContent = deck;
+      
+      nameSpan.appendChild(iconSpan);
+      nameSpan.appendChild(textSpan);
 
       item.appendChild(deckCheck);
       item.appendChild(nameSpan);
@@ -693,7 +745,17 @@ function renderExpansions() {
       
       const nameSpan = document.createElement('span');
       nameSpan.className = 'deck-name';
-      nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
+      
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'deck-icon-wrapper';
+      iconSpan.innerHTML = getDeckIconHtml(deck);
+      
+      const textSpan = document.createElement('span');
+      textSpan.className = 'deck-text';
+      textSpan.textContent = deck;
+      
+      nameSpan.appendChild(iconSpan);
+      nameSpan.appendChild(textSpan);
 
       item.appendChild(deckCheck);
       item.appendChild(nameSpan);
@@ -859,7 +921,7 @@ function distributeDecks() {
       <div class="combo-title">${combo}</div>
       <div class="player-decks">
         <div class="deck-row">
-          <div class="deck-emoji-circle">${getEmojiForDeck(assignment.deck1)}</div>
+          <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck1, "deck-icon-img-circle")}</div>
           <div class="deck-details">
             <span class="deck-title">${assignment.deck1}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
@@ -871,7 +933,7 @@ function distributeDecks() {
           <span class="connector-line"></span>
         </div>
         <div class="deck-row">
-          <div class="deck-emoji-circle">${getEmojiForDeck(assignment.deck2)}</div>
+          <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
             <span class="deck-title">${assignment.deck2}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
