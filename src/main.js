@@ -135,7 +135,9 @@ const emojiMap = {
   "sheep": "🐑",
   "penguins": "🐧",
   "goblins": "👺",
-  "knights of the round table": "🛡️"
+  "knights of the round table": "🛡️",
+  "teens": "🎒",
+  "titans": "🪐"
 };
 
 function getEmojiForDeck(deckName) {
@@ -179,6 +181,19 @@ function getBadPartners(deckName) {
   return partners;
 }
 
+function resolveImagePath(path) {
+  if (!path) return '';
+  const isGitHubPages = window.location.hostname.endsWith('github.io');
+  if (isGitHubPages) {
+    const repoName = window.location.pathname.split('/')[1];
+    if (repoName && !path.startsWith(`/${repoName}`) && !path.startsWith(`${repoName}`)) {
+      const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+      return `/${repoName}/${cleanPath}`;
+    }
+  }
+  return path;
+}
+
 // Fetch cards metadata
 async function loadCards() {
   try {
@@ -219,7 +234,7 @@ function renderExpansions() {
       const imgWrapper = document.createElement('div');
       imgWrapper.className = 'expansion-cover-wrapper';
       const img = document.createElement('img');
-      img.src = group.Image;
+      img.src = resolveImagePath(group.Image);
       img.alt = `${group.GroupTitle} Box Art`;
       img.className = 'expansion-cover';
       img.referrerPolicy = 'no-referrer';
