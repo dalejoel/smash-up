@@ -197,11 +197,258 @@ function resolveImagePath(path) {
 function getDeckSourceInfo(deckName) {
   if (!cardData || !cardData.CardGroups) return '';
   const group = cardData.CardGroups.find(g => g.Decks.includes(deckName));
-  if (!group) return '';
-  if (group.Decks.length === 1) {
-    return 'Solo Deck';
-  }
   return group.GroupTitle;
+}
+
+const deckDescriptions = {
+  // Core
+  "Pirates": "Specializes in moving minions around the board to optimize scoring and destroying opposing small minions.",
+  "Ninja": "Focuses on espionage, hand destruction, and playing cards from hand right before a base scores to steal the victory.",
+  "Zombies": "Summons minions back from the grave (discard pile) repeatedly, overwhelming bases with relentless dead.",
+  "Robots": "Swarms the board with low-power minions that buff each other, scoring bases rapidly in a single turn.",
+  "Dinosaurs": "Overpowers your opponents with raw strength, massive minions, and power-boosting cards.",
+  "Wizards": "Cycles through the deck rapidly by drawing cards and gaining extra actions to execute massive card plays.",
+  "Tricksters": "Disrupts opponents by forcing discards, destroying cards, and placing hazards/traps on bases.",
+  "Aliens": "Controls the field by bouncing minions back to players' hands and gains Victory Points directly.",
+  // Cthulhu
+  "Elder Things": "Forces opponents to take useless 'Madness' cards that clutter their hands and subtract from their final score.",
+  "Innsmouth": "Summons a wave of 'The Locals' minions that call more copies of themselves from the deck.",
+  "Cthulhu Cultists": "Uses Madness cards as a resource to accelerate power, sacrificing own minions for great rewards.",
+  "Miskatonic University": "Gains and plays Madness cards, then studies them to draw cards or gain power before discarding them.",
+  // Level 9000
+  "Bear Cavalry": "Moves opponents' minions out of the way, destroying them when they enter bases guarded by your armored bears.",
+  "Ghosts": "Rely on having a small hand or empty hand to unlock powerful effects and massive power spikes.",
+  "Killer Plants": "Grows slowly and steadily over time, searching the deck for key minions and locking down bases.",
+  "Steampunks": "Attaches powerful machinery to bases to boost power, draw cards, and destroy opponent cards.",
+  // SciFi
+  "Cyborg Apes": "Attaches action cards to minions to grant them permanent power boosts and special abilities.",
+  "Shape Shifters": "Copies other minions' attributes, swaps minions on the field, and adapts to any opponent strategy.",
+  "Super Spies": "Looks at and manipulates the top cards of the deck to control the flow of card draws.",
+  "Time Travelers": "Returns cards from the field or discard pile back to the hand to replay them again and again.",
+  // Monster Smash
+  "Giant Ants": "Distributes and moves +1 power counters among your minions to build massive threats.",
+  "Mad Scientists": "Experiments with +1 power counters, consuming them for powerful bonuses and extra plays.",
+  "Vampires": "Destroys opposing minions to gain power counters, growing stronger by feeding on your enemies.",
+  "Werewolves": "Relies on bursts of strength that trigger depending on the timing of your turns and base conditions.",
+  // Pretty Pretty
+  "Fairies": "Offers choices to opponents, gains extra actions, and chooses from multiple versatile card options.",
+  "Kitty Cats": "Controls and charms opposing minions, forcing them to work for you before sacrificing them.",
+  "Mythic Horses": "Gains power when your minions are grouped together, riding together to overwhelm bases.",
+  "Princesses": "A few highly powerful, individual cards that dominate the field with grace and royalty.",
+  // Munchkin
+  "Clerics": "Prevents cards from entering the discard pile, heals your minions, and bypasses monster threats.",
+  "Dwarves": "Hoards treasure cards and gains massive benefits from having lots of items.",
+  "Elves": "Shares benefits with opponents to gain even larger bonuses for yourself.",
+  "Halflings": "Relentless swarm tactics, playing extra minions and taking advantage of quick feet.",
+  "Mages": "Casts powerful spells, discards cards for spell fuel, and manipulates base cards.",
+  "Orcs": "Thrives on combat, gaining extra power when opposing minions are on the same base.",
+  "Thieves": "Steals treasure cards and manipulates loot resources to your advantage.",
+  "Warriors": "Focuses on defeating monsters on bases to claim treasures and glory.",
+  // It's Your Fault
+  "Dragons": "Dominates bases, reducing opponent minion power and locking down scoring conditions.",
+  "Mythic Greeks": "Plays action cards to trigger chain reactions that boost your minions' power.",
+  "Sharks": "Feeds on smaller minions, gaining power and moving quickly between bases when blood is in the water.",
+  "Superheroes": "Searches the deck for power-5 minions and uses them to protect weaker cards.",
+  "Tornadoes": "Moves minions and actions freely around the board to disrupt scoring and steal positions.",
+  // Cease & Desist
+  "Star Roamers": "Protects minions by returning them to hand, and manipulates base actions.",
+  "Astro Knights": "Buffs single minions to cosmic power levels with laser sword attachments.",
+  "Changerbots": "Shifts between different forms to gain power, armor, or mobility as needed.",
+  "Ignobles": "Gives away control of minions to manipulate opponents, then betrays them to take them back.",
+  // What Were We Thinking
+  "Teddybears": "Redirects damage, protects minions, and benefits when opponents play cards on your bases.",
+  "Grandmas": "Controls the top cards of the deck to prepare for future turns.",
+  "Rock Stars": "Plays 'Groupies' that gather together in crowds to instantly score bases.",
+  "Explorers": "Manipulates bases, moves between them, and gains bonuses from playing cards on new bases.",
+  // Big in Japan
+  "Itty Critters": "Summons cute little monsters from the deck for one turn before they return.",
+  "Kaiju": "Massive monsters that attach actions to themselves and destroy bases.",
+  "Magical Girls": "Stores power counters on actions and unleashes them for spell combos.",
+  "Mega Troopers": "Uses hand size and quick reaction actions to fight off threats.",
+  // That '70s
+  "Disco Dancers": "Copies actions played on other minions, keeping the dance party going.",
+  "Kung Fu Fighters": "Passes +1 power counters between minions, flowing like water.",
+  "Truckers": "Moves bases around and attaches cargo actions to them.",
+  "Vigilantes": "Triggers strong effects whenever your opponents play cards that affect your minions.",
+  // Oops
+  "Ancient Egyptians": "Buries cards face down under bases to trigger delayed, powerful effects.",
+  "Cowboys": "Initiates duels with opposing minions, winning them to gain power and victory points.",
+  "Samurai": "Gains honor counters when minions die or bases score, converting honor to power.",
+  "Vikings": "Steals cards directly from opponents' decks or discard piles to use them as your own.",
+  // World Tour: International Incident
+  "Luchadors": "Pins opposing minions down, setting them up for massive wrestling moves.",
+  "Mounties": "Moves around the board to assist, gaining power when opposing minions are present.",
+  "Musketeers": "Chains action plays to gain huge temporary power boosts.",
+  "Sumo Wrestlers": "Pushes opposing minions off bases to secure solo scoring.",
+  // World Tour: Culture Shock
+  "Anansi Tales": "Gives card control to opponents to trigger trickster effects.",
+  "Ancient Incas": "Builds massive structures on bases that provide ongoing benefits.",
+  "Grimms' Fairy Tales": "Uses stories to buff your minions and penalize opponents.",
+  "Polynesian Voyagers": "Explores and navigates bases, placing extra bases into play.",
+  "Russian Fairy Tales": "Transforms minions into other creatures to adapt to conditions.",
+  // Marvel
+  "Avengers": "Assembles a team of heroes that buff each other when united on a base.",
+  "Hydra": "Swarms the board by destroying your own minions to spawn more.",
+  "Kree": "Enhances troops with advanced alien technology and directives.",
+  "Masters of Evil": "Gains bonuses when scoring bases, even if you don't win first place.",
+  "S.H.I.E.L.D.": "Deploys agents to support each other and control bases.",
+  "Sinister Six": "Dominates bases by manipulating base scoring thresholds.",
+  "Spider-Verse": "Swings around the board, moving minions and attacking quickly.",
+  "Ultimates": "Focuses on high-power cards that secure victories.",
+  // Disney
+  "Aladdin": "Steals resources, grants wishes, and manipulates actions.",
+  "Beauty and the Beast": "Synergizes between high-power and low-power minions.",
+  "Big Hero 6": "Upgrades hero minions with microbots and tech actions.",
+  "Frozen": "Freezes opposing minions, preventing them from moving or attacking.",
+  "Mulan": "Trains minions to gain honor and combat strength.",
+  "The Lion King": "Benefits from minions entering the discard pile (the circle of life).",
+  "The Nightmare Before Christmas": "Spreads holiday cheer (or fear) to manipulate points.",
+  "Wreck-It Ralph": "Breaks bases and fixes them to gain rewards.",
+  // 10th Anniversary
+  "Mermaids": "Lures opposing minions to different bases and controls their movements.",
+  "Skeletons": "Manipulates the discard pile and revives bony minions.",
+  "World Champs": "Master-tier cards that represent high-level competitive mechanics.",
+  // Movies
+  "Action Heroes": "Chains actions to perform cinematic stunts and explosive plays.",
+  "Backtimers": "Manipulates time, replaying cards and resetting actions.",
+  "Extramorphs": "Parasitic minions that evolve and feed on opposing minions.",
+  "Wraithrustlers": "Traps spirits and opposing minions, containing them for points.",
+  // Promos / Extras
+  "Geeks": "Rulebook lawyering! Cancels actions, controls decks, and disrupts standard rules.",
+  "All-Stars": "High-synergy deck featuring the best cards from across various factions.",
+  "Goblins": "Gambles and flips coins/draws cards for high-risk, high-reward plays.",
+  "Penguins": "Swarms the deck, drawing and playing extra cards from the top.",
+  "Knights of the Round Table": "Follows quests and codes of honor to score extra points.",
+  "Titans": "Summons massive Titan cards that dominate bases.",
+  "Teens": "Rely on teenage angst, text messages, and mood swings for unexpected shifts."
+};
+
+function openExpansionModal(group) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  
+  const content = document.createElement('div');
+  content.className = 'modal-content-box';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'modal-close-btn';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.addEventListener('click', () => overlay.remove());
+  content.appendChild(closeBtn);
+  
+  const modalLayout = document.createElement('div');
+  modalLayout.className = 'modal-layout';
+  
+  const imgCol = document.createElement('div');
+  imgCol.className = 'modal-img-col';
+  if (group.Image) {
+    const img = document.createElement('img');
+    img.src = resolveImagePath(group.Image);
+    img.alt = `${group.GroupTitle} Box Art`;
+    img.className = 'modal-cover-img';
+    img.referrerPolicy = 'no-referrer';
+    imgCol.appendChild(img);
+  } else if (group.GroupTitle === "Promos & Solo Decks") {
+    const promoPlaceholder = document.createElement('div');
+    promoPlaceholder.className = 'modal-promo-placeholder';
+    promoPlaceholder.innerHTML = '🎁';
+    imgCol.appendChild(promoPlaceholder);
+  }
+  modalLayout.appendChild(imgCol);
+  
+  const detailsCol = document.createElement('div');
+  detailsCol.className = 'modal-details-col';
+  
+  const title = document.createElement('h3');
+  title.className = 'modal-title';
+  title.textContent = group.GroupTitle;
+  detailsCol.appendChild(title);
+  
+  const subtitle = document.createElement('p');
+  subtitle.className = 'modal-subtitle';
+  subtitle.textContent = `${group.Decks.length} Factions Included:`;
+  detailsCol.appendChild(subtitle);
+  
+  const list = document.createElement('div');
+  list.className = 'modal-deck-desc-list';
+  
+  group.Decks.forEach(deck => {
+    const item = document.createElement('div');
+    item.className = 'modal-deck-desc-item';
+    
+    const emoji = getEmojiForDeck(deck);
+    const desc = deckDescriptions[deck] || "No description available for this faction.";
+    
+    item.innerHTML = `
+      <div class="modal-deck-desc-header">
+        <span class="modal-deck-emoji">${emoji}</span>
+        <span class="modal-deck-name">${deck}</span>
+      </div>
+      <div class="modal-deck-desc-body">${desc}</div>
+    `;
+    list.appendChild(item);
+  });
+  
+  detailsCol.appendChild(list);
+  modalLayout.appendChild(detailsCol);
+  content.appendChild(modalLayout);
+  overlay.appendChild(content);
+  
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+  
+  document.body.appendChild(overlay);
+}
+
+const profiles = {
+  "joel-dale": {
+    name: "Joel Dale",
+    excludeGroups: ["Smash Up: Marvel", "Smash Up: Disney Edition", "Munchkin"]
+  },
+  "all-decks": {
+    name: "Complete Collection",
+    excludeGroups: []
+  }
+};
+
+function applyProfile(profileId) {
+  const profileSelect = document.getElementById('profile-select');
+  if (profileSelect) {
+    profileSelect.value = profileId;
+  }
+  localStorage.setItem('smashup-profile', profileId);
+
+  if (profileId === 'custom') {
+    const savedDecks = localStorage.getItem('smashup-custom-decks');
+    if (savedDecks) {
+      selectedDecks.clear();
+      JSON.parse(savedDecks).forEach(deck => selectedDecks.add(deck));
+    }
+    return;
+  }
+
+  selectedDecks.clear();
+  const profile = profiles[profileId];
+  if (!profile) return;
+
+  cardData.CardGroups.forEach(group => {
+    if (!profile.excludeGroups.includes(group.GroupTitle)) {
+      group.Decks.forEach(deck => selectedDecks.add(deck));
+    }
+  });
+}
+
+function handleSelectionChange() {
+  const profileSelect = document.getElementById('profile-select');
+  if (profileSelect && profileSelect.value !== 'custom') {
+    profileSelect.value = 'custom';
+    localStorage.setItem('smashup-profile', 'custom');
+  }
+  localStorage.setItem('smashup-custom-decks', JSON.stringify([...selectedDecks]));
+  updateCounts();
 }
 
 // Fetch cards metadata
@@ -213,10 +460,9 @@ async function loadCards() {
     }
     cardData = await response.json();
     
-    // Select all by default
-    cardData.CardGroups.forEach(group => {
-      group.Decks.forEach(deck => selectedDecks.add(deck));
-    });
+    // Load profile from localStorage or default to 'joel-dale'
+    const savedProfile = localStorage.getItem('smashup-profile') || 'joel-dale';
+    applyProfile(savedProfile);
 
     renderExpansions();
     updateCounts();
@@ -235,7 +481,11 @@ function renderExpansions() {
   if (!container) return;
   container.innerHTML = '';
 
-  cardData.CardGroups.forEach((group, index) => {
+  const soloGroups = cardData.CardGroups.filter(g => g.Decks.length === 1);
+  const standardGroups = cardData.CardGroups.filter(g => g.Decks.length > 1);
+
+  // Render standard expansions
+  standardGroups.forEach((group, index) => {
     const card = document.createElement('div');
     card.className = 'expansion-card';
 
@@ -243,6 +493,10 @@ function renderExpansions() {
     if (group.Image) {
       const imgWrapper = document.createElement('div');
       imgWrapper.className = 'expansion-cover-wrapper';
+      imgWrapper.style.cursor = 'pointer';
+      imgWrapper.title = 'Click to view expansion details & deck descriptions';
+      imgWrapper.addEventListener('click', () => openExpansionModal(group));
+      
       const img = document.createElement('img');
       img.src = resolveImagePath(group.Image);
       img.alt = `${group.GroupTitle} Box Art`;
@@ -251,9 +505,6 @@ function renderExpansions() {
       imgWrapper.appendChild(img);
       card.appendChild(imgWrapper);
     }
-
-    // Check if group is a solo deck
-    const isSolo = group.Decks.length === 1;
 
     // Header with master checkbox
     const titleBar = document.createElement('div');
@@ -273,97 +524,237 @@ function renderExpansions() {
     titleBar.appendChild(label);
     card.appendChild(titleBar);
 
-    if (isSolo) {
-      const singleDeck = group.Decks[0];
-      const isSelected = selectedDecks.has(singleDeck);
-      checkbox.checked = isSelected;
-      if (isSelected) {
-        card.classList.add('selected-card');
-      }
+    // Check if all decks in group are selected
+    const allDecksSelected = group.Decks.every(deck => selectedDecks.has(deck));
+    const anyDecksSelected = group.Decks.some(deck => selectedDecks.has(deck));
+    checkbox.checked = allDecksSelected;
+    checkbox.indeterminate = !allDecksSelected && anyDecksSelected;
 
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          selectedDecks.add(singleDeck);
+    if (anyDecksSelected) {
+      card.classList.add('selected-card');
+    }
+
+    // List of decks
+    const list = document.createElement('div');
+    list.className = 'deck-list';
+
+    group.Decks.forEach(deck => {
+      const isSelected = selectedDecks.has(deck);
+      const item = document.createElement('label');
+      item.className = `deck-item ${isSelected ? 'selected' : ''}`;
+
+      const deckCheck = document.createElement('input');
+      deckCheck.type = 'checkbox';
+      deckCheck.checked = isSelected;
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'deck-name';
+      nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
+
+      item.appendChild(deckCheck);
+      item.appendChild(nameSpan);
+      list.appendChild(item);
+
+      // Event listener for single deck
+      deckCheck.addEventListener('change', () => {
+        if (deckCheck.checked) {
+          selectedDecks.add(deck);
+          item.classList.add('selected');
+        } else {
+          selectedDecks.delete(deck);
+          item.classList.remove('selected');
+        }
+        
+        // Update card visual selection state
+        const updatedAnySelected = group.Decks.some(d => selectedDecks.has(d));
+        if (updatedAnySelected) {
           card.classList.add('selected-card');
         } else {
-          selectedDecks.delete(singleDeck);
           card.classList.remove('selected-card');
         }
-        updateCounts();
-      });
-      container.appendChild(card);
-    } else {
-      // Check if all decks in group are selected
-      const allDecksSelected = group.Decks.every(deck => selectedDecks.has(deck));
-      checkbox.checked = allDecksSelected;
-      checkbox.indeterminate = !allDecksSelected && group.Decks.some(deck => selectedDecks.has(deck));
 
-      // List of decks
-      const list = document.createElement('div');
-      list.className = 'deck-list';
-
-      group.Decks.forEach(deck => {
-        const isSelected = selectedDecks.has(deck);
-        const item = document.createElement('label');
-        item.className = `deck-item ${isSelected ? 'selected' : ''}`;
-
-        const deckCheck = document.createElement('input');
-        deckCheck.type = 'checkbox';
-        deckCheck.checked = isSelected;
+        // Update group master checkbox state
+        const updatedAllSelected = group.Decks.every(d => selectedDecks.has(d));
+        checkbox.checked = updatedAllSelected;
+        checkbox.indeterminate = !updatedAllSelected && updatedAnySelected;
         
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'deck-name';
-        nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
+        handleSelectionChange();
+      });
+    });
 
-        item.appendChild(deckCheck);
-        item.appendChild(nameSpan);
-        list.appendChild(item);
+    card.appendChild(list);
+    container.appendChild(card);
 
-        // Event listener for single deck
-        deckCheck.addEventListener('change', () => {
-          if (deckCheck.checked) {
-            selectedDecks.add(deck);
-            item.classList.add('selected');
-          } else {
-            selectedDecks.delete(deck);
-            item.classList.remove('selected');
-          }
-          
-          // Update group master checkbox state
-          const updatedAllSelected = group.Decks.every(d => selectedDecks.has(d));
-          checkbox.checked = updatedAllSelected;
-          checkbox.indeterminate = !updatedAllSelected && group.Decks.some(d => selectedDecks.has(d));
-          
-          updateCounts();
-        });
+    // Event listener for master checkbox
+    checkbox.addEventListener('change', () => {
+      const checkAll = checkbox.checked;
+      checkbox.indeterminate = false;
+
+      const deckItems = list.querySelectorAll('.deck-item');
+      group.Decks.forEach((deck, idx) => {
+        const item = deckItems[idx];
+        const deckCheck = item.querySelector('input[type="checkbox"]');
+        deckCheck.checked = checkAll;
+
+        if (checkAll) {
+          selectedDecks.add(deck);
+          item.classList.add('selected');
+        } else {
+          selectedDecks.delete(deck);
+          item.classList.remove('selected');
+        }
       });
 
-      card.appendChild(list);
-      container.appendChild(card);
+      if (checkAll) {
+        card.classList.add('selected-card');
+      } else {
+        card.classList.remove('selected-card');
+      }
 
-      // Event listener for master checkbox
-      checkbox.addEventListener('change', () => {
-        const checkAll = checkbox.checked;
-        checkbox.indeterminate = false;
-
-        const deckItems = list.querySelectorAll('.deck-item');
-        group.Decks.forEach((deck, idx) => {
-          const item = deckItems[idx];
-          const deckCheck = item.querySelector('input[type="checkbox"]');
-          deckCheck.checked = checkAll;
-
-          if (checkAll) {
-            selectedDecks.add(deck);
-            item.classList.add('selected');
-          } else {
-            selectedDecks.delete(deck);
-            item.classList.remove('selected');
-          }
-        });
-        updateCounts();
-      });
-    }
+      handleSelectionChange();
+    });
   });
+
+  // Render combined Promos & Solo Decks card
+  if (soloGroups.length > 0) {
+    const card = document.createElement('div');
+    card.className = 'expansion-card promo-card';
+
+    // Mini collage of promo images
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'expansion-cover-wrapper';
+    imgWrapper.style.cursor = 'pointer';
+    imgWrapper.title = 'Click to view promo details & deck descriptions';
+    imgWrapper.addEventListener('click', () => {
+      openExpansionModal({
+        GroupTitle: "Promos & Solo Decks",
+        Decks: allPromoDecks,
+        Image: null
+      });
+    });
+    
+    const coversGrid = document.createElement('div');
+    coversGrid.className = 'promo-covers-grid';
+    
+    soloGroups.forEach(g => {
+      if (g.Image) {
+        const miniImg = document.createElement('img');
+        miniImg.src = resolveImagePath(g.Image);
+        miniImg.alt = `${g.GroupTitle} Box Art`;
+        miniImg.className = 'promo-mini-cover';
+        miniImg.referrerPolicy = 'no-referrer';
+        coversGrid.appendChild(miniImg);
+      }
+    });
+    imgWrapper.appendChild(coversGrid);
+    card.appendChild(imgWrapper);
+
+    // Header with master checkbox
+    const titleBar = document.createElement('div');
+    titleBar.className = 'expansion-title-bar';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'expansion-check-promos';
+
+    const label = document.createElement('label');
+    label.setAttribute('for', checkbox.id);
+    label.className = 'expansion-title';
+    label.textContent = "Promos & Solo Decks";
+    label.style.cursor = 'pointer';
+
+    titleBar.appendChild(checkbox);
+    titleBar.appendChild(label);
+    card.appendChild(titleBar);
+
+    // List of promo decks
+    const list = document.createElement('div');
+    list.className = 'deck-list';
+
+    const allPromoDecks = soloGroups.map(g => g.Decks[0]);
+    const allSelected = allPromoDecks.every(deck => selectedDecks.has(deck));
+    const anySelected = allPromoDecks.some(deck => selectedDecks.has(deck));
+    checkbox.checked = allSelected;
+    checkbox.indeterminate = !allSelected && anySelected;
+
+    if (anySelected) {
+      card.classList.add('selected-card');
+    }
+
+    soloGroups.forEach(g => {
+      const deck = g.Decks[0];
+      const isSelected = selectedDecks.has(deck);
+      const item = document.createElement('label');
+      item.className = `deck-item ${isSelected ? 'selected' : ''}`;
+
+      const deckCheck = document.createElement('input');
+      deckCheck.type = 'checkbox';
+      deckCheck.checked = isSelected;
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'deck-name';
+      nameSpan.textContent = `${getEmojiForDeck(deck)} ${deck}`;
+
+      item.appendChild(deckCheck);
+      item.appendChild(nameSpan);
+      list.appendChild(item);
+
+      deckCheck.addEventListener('change', () => {
+        if (deckCheck.checked) {
+          selectedDecks.add(deck);
+          item.classList.add('selected');
+        } else {
+          selectedDecks.delete(deck);
+          item.classList.remove('selected');
+        }
+        
+        const updatedAnySelected = allPromoDecks.some(d => selectedDecks.has(d));
+        if (updatedAnySelected) {
+          card.classList.add('selected-card');
+        } else {
+          card.classList.remove('selected-card');
+        }
+
+        const updatedAllSelected = allPromoDecks.every(d => selectedDecks.has(d));
+        checkbox.checked = updatedAllSelected;
+        checkbox.indeterminate = !updatedAllSelected && updatedAnySelected;
+        
+        handleSelectionChange();
+      });
+    });
+
+    card.appendChild(list);
+    container.appendChild(card);
+
+    // Master checkbox listener
+    checkbox.addEventListener('change', () => {
+      const checkAll = checkbox.checked;
+      checkbox.indeterminate = false;
+
+      const deckItems = list.querySelectorAll('.deck-item');
+      allPromoDecks.forEach((deck, idx) => {
+        const item = deckItems[idx];
+        const deckCheck = item.querySelector('input[type="checkbox"]');
+        deckCheck.checked = checkAll;
+
+        if (checkAll) {
+          selectedDecks.add(deck);
+          item.classList.add('selected');
+        } else {
+          selectedDecks.delete(deck);
+          item.classList.remove('selected');
+        }
+      });
+
+      if (checkAll) {
+        card.classList.add('selected-card');
+      } else {
+        card.classList.remove('selected-card');
+      }
+      
+      handleSelectionChange();
+    });
+  }
 }
 
 function updateCounts() {
@@ -371,6 +762,15 @@ function updateCounts() {
   if (activeCountBadge) {
     activeCountBadge.textContent = selectedDecks.size;
   }
+}
+
+function getComboName(d1, d2) {
+  let part1 = d1.trim();
+  // Strip 's' from end of first faction for proper Smash Up naming (e.g., Zombies -> Zombie, except for names like 'Cthulhu Cultists' or singulars)
+  if (part1.endsWith('s') && !part1.endsWith('ss') && !part1.toLowerCase().endsWith('us') && !part1.toLowerCase().endsWith('is')) {
+    part1 = part1.substring(0, part1.length - 1);
+  }
+  return `${part1} ${d2.trim()}`;
 }
 
 // Randomize assignment to players
@@ -449,21 +849,33 @@ function distributeDecks() {
     card.className = 'player-card';
     card.style.animationDelay = `${index * 80}ms`;
 
+    const combo = getComboName(assignment.deck1, assignment.deck2);
+
     card.innerHTML = `
       <div class="player-header">
         <span class="player-name">Player ${assignment.playerIndex}</span>
         <span class="player-badge">Active</span>
       </div>
+      <div class="combo-title">${combo}</div>
       <div class="player-decks">
-        <div class="deck-badge">
-          <span class="deck-badge-icon">${getEmojiForDeck(assignment.deck1)}</span>
-          <span class="deck-badge-name">${assignment.deck1}</span>
-          <span class="deck-badge-source" style="font-size: 0.725rem; color: var(--text-secondary); margin-top: 0.35rem; font-weight: 600;">${getDeckSourceInfo(assignment.deck1)}</span>
+        <div class="deck-row">
+          <div class="deck-emoji-circle">${getEmojiForDeck(assignment.deck1)}</div>
+          <div class="deck-details">
+            <span class="deck-title">${assignment.deck1}</span>
+            <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
+          </div>
         </div>
-        <div class="deck-badge">
-          <span class="deck-badge-icon">${getEmojiForDeck(assignment.deck2)}</span>
-          <span class="deck-badge-name">${assignment.deck2}</span>
-          <span class="deck-badge-source" style="font-size: 0.725rem; color: var(--text-secondary); margin-top: 0.35rem; font-weight: 600;">${getDeckSourceInfo(assignment.deck2)}</span>
+        <div class="deck-connector">
+          <span class="connector-line"></span>
+          <span class="connector-badge">⚡</span>
+          <span class="connector-line"></span>
+        </div>
+        <div class="deck-row">
+          <div class="deck-emoji-circle">${getEmojiForDeck(assignment.deck2)}</div>
+          <div class="deck-details">
+            <span class="deck-title">${assignment.deck2}</span>
+            <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
+          </div>
         </div>
       </div>
     `;
@@ -482,5 +894,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const pickBtn = document.getElementById('pick-btn');
   if (pickBtn) {
     pickBtn.addEventListener('click', distributeDecks);
+  }
+
+  const profileSelect = document.getElementById('profile-select');
+  if (profileSelect) {
+    profileSelect.addEventListener('change', (e) => {
+      applyProfile(e.target.value);
+      renderExpansions();
+      updateCounts();
+    });
   }
 });

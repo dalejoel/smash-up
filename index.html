@@ -48,6 +48,14 @@
           </select>
         </div>
 
+        <div class="select-wrapper">
+          <select id="profile-select">
+            <option value="joel-dale">Profile: Joel Dale</option>
+            <option value="all-decks">Profile: All Decks</option>
+            <option value="custom">Profile: Custom Selection</option>
+          </select>
+        </div>
+
         <div style="display: flex; align-items: center; gap: 0.65rem; margin: 0.25rem 0 0.5rem 0; cursor: pointer; user-select: none;">
           <input type="checkbox" id="balance-check" checked>
           <label for="balance-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Avoid Bad Pairings (Balanced)</label>
@@ -63,27 +71,30 @@
         <div id="error-container"></div>
       </section>
 
-      <!-- Decks Checklist Panel (Main content area) -->
-      <section class="decks-panel">
-        <div class="decks-header">
-          <h2 class="section-title">Active Expansions & Decks</h2>
-          <div class="decks-count">
-            <span id="active-count">0</span> Active Decks
+      <!-- Right Content Area -->
+      <div class="main-content">
+        <!-- Decks Checklist Panel (Main content area) -->
+        <section class="decks-panel">
+          <div class="decks-header">
+            <h2 class="section-title">Active Expansions & Decks</h2>
+            <div class="decks-count">
+              <span id="active-count">0</span> Active Decks
+            </div>
           </div>
-        </div>
 
-        <div id="expansions-container" class="expansions-grid">
-          <!-- Dynamically populated expansions list -->
-        </div>
-      </section>
+          <div id="expansions-container" class="expansions-grid">
+            <!-- Dynamically populated expansions list -->
+          </div>
+        </section>
 
-      <!-- Players Assignments Results (Full width below) -->
-      <section id="players-section" class="players-section" hidden>
-        <h2 class="section-title">Distributed Player Decks</h2>
-        <div id="results-container" class="players-grid">
-          <!-- Dynamically populated cards -->
-        </div>
-      </section>
+        <!-- Players Assignments Results (Below checklist on the right) -->
+        <section id="players-section" class="players-section" hidden>
+          <h2 class="section-title">Distributed Player Decks</h2>
+          <div id="results-container" class="players-grid">
+            <!-- Dynamically populated cards -->
+          </div>
+        </section>
+      </div>
 
     </main>
 
