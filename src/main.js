@@ -492,7 +492,9 @@ const profiles = {
       "World Tour: Culture Shock",
       "Goblins Promo Deck",
       "Knights of the Round Table Promo Deck",
-      "Teens Promo Deck"
+      "Teens Promo Deck",
+      "Clowns Promo Deck",
+      "Slashers Promo Deck"
     ]
   },
   "all-decks": {
@@ -545,7 +547,12 @@ async function loadCards() {
     if (!response.ok) {
       throw new Error(`Failed to fetch cards: ${response.statusText}`);
     }
-    cardData = await response.json();
+    const rawData = await response.json();
+    
+    // Filter out "Titans Pack" completely as Titans are modifiers, not a standalone deck
+    cardData = {
+      CardGroups: rawData.CardGroups.filter(group => group.GroupTitle !== "Titans Pack")
+    };
     
     // Load profile from localStorage or default to 'joel-dale'
     const savedProfile = localStorage.getItem('smashup-profile') || 'joel-dale';
