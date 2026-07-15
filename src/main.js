@@ -162,6 +162,41 @@ const customDeckIcons = {
   "Clowns": "images/covers/clowns.png"
 };
 
+const titanMap = {
+  "Bear Cavalry": "Major Ursa",
+  "Changerbots": "Mergacon",
+  "Explorers": "Very Large Boulder",
+  "Fairies": "Spirit of the Forest",
+  "Ghosts": "Creampuff Man",
+  "Giant Ants": "Death on Six Legs",
+  "Ignobles": "The Hill that Strolls",
+  "Innsmouth": "Dagon",
+  "Cthulhu Cultists": "Cthulhu",
+  "Pirates": "The Kraken",
+  "Super Spies": "Moon Zero Three",
+  "Time Travelers": "Time Box",
+  "Tricksters": "Big Funny Giant",
+  "Vampires": "Ancient Lord",
+  "Werewolves": "Great Wolf Spirit",
+  "Wizards": "Arcane Protector",
+  "Itty Critters": "Rainboroc",
+  "Kaiju": "Gorgodzolla",
+  "Magical Girls": "Walking Castle",
+  "Mega Troopers": "Megabot",
+  "Penguins": "Emperor Penguin",
+  "Ancient Egyptians": "Sphinx",
+  "Cowboys": "Pecos Bill",
+  "Dinosaurs": "Fort Titanosaurus",
+  "Grandmas": "Great Grandma",
+  "Killer Plants": "Killer Kudzu",
+  "Kung Fu Fighters": "Sifu",
+  "Mad Scientists": "The Bride",
+  "Ninja": "Invisible Ninja",
+  "Sharks": "Helicoprion",
+  "Superheroes": "The Everything Glove",
+  "Tornadoes": "Category 5"
+};
+
 function getDeckIconHtml(deckName, locationClass = "deck-icon-img", enableClick = true) {
   const norm = deckName.trim();
   const customImg = customDeckIcons[norm];
@@ -533,11 +568,19 @@ function renderExpansions() {
   if (!container) return;
   container.innerHTML = '';
 
+  const filterTitans = document.getElementById('titan-filter-check') ? document.getElementById('titan-filter-check').checked : false;
+
   const soloGroups = cardData.CardGroups.filter(g => g.Decks.length === 1);
   const standardGroups = cardData.CardGroups.filter(g => g.Decks.length > 1);
 
   // Render standard expansions
   standardGroups.forEach((group, index) => {
+    let visibleDecks = group.Decks;
+    if (filterTitans) {
+      visibleDecks = group.Decks.filter(deck => !!titanMap[deck]);
+    }
+    if (visibleDecks.length === 0) return; // Skip rendering this card
+
     const card = document.createElement('div');
     card.className = 'expansion-card';
 
@@ -577,8 +620,8 @@ function renderExpansions() {
     card.appendChild(titleBar);
 
     // Check if all decks in group are selected
-    const allDecksSelected = group.Decks.every(deck => selectedDecks.has(deck));
-    const anyDecksSelected = group.Decks.some(deck => selectedDecks.has(deck));
+    const allDecksSelected = visibleDecks.every(deck => selectedDecks.has(deck));
+    const anyDecksSelected = visibleDecks.some(deck => selectedDecks.has(deck));
     checkbox.checked = allDecksSelected;
     checkbox.indeterminate = !allDecksSelected && anyDecksSelected;
 
@@ -590,7 +633,7 @@ function renderExpansions() {
     const list = document.createElement('div');
     list.className = 'deck-list';
 
-    group.Decks.forEach(deck => {
+    visibleDecks.forEach(deck => {
       const isSelected = selectedDecks.has(deck);
       const item = document.createElement('label');
       item.className = `deck-item ${isSelected ? 'selected' : ''}`;
@@ -608,7 +651,7 @@ function renderExpansions() {
       
       const textSpan = document.createElement('span');
       textSpan.className = 'deck-text';
-      textSpan.textContent = deck;
+      textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
       
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
@@ -628,7 +671,7 @@ function renderExpansions() {
         }
         
         // Update card visual selection state
-        const updatedAnySelected = group.Decks.some(d => selectedDecks.has(d));
+        const updatedAnySelected = visibleDecks.some(d => selectedDecks.has(d));
         if (updatedAnySelected) {
           card.classList.add('selected-card');
         } else {
@@ -636,7 +679,7 @@ function renderExpansions() {
         }
 
         // Update group master checkbox state
-        const updatedAllSelected = group.Decks.every(d => selectedDecks.has(d));
+        const updatedAllSelected = visibleDecks.every(d => selectedDecks.has(d));
         checkbox.checked = updatedAllSelected;
         checkbox.indeterminate = !updatedAllSelected && updatedAnySelected;
         
@@ -653,7 +696,7 @@ function renderExpansions() {
       checkbox.indeterminate = false;
 
       const deckItems = list.querySelectorAll('.deck-item');
-      group.Decks.forEach((deck, idx) => {
+      visibleDecks.forEach((deck, idx) => {
         const item = deckItems[idx];
         const deckCheck = item.querySelector('input[type="checkbox"]');
         deckCheck.checked = checkAll;
@@ -678,7 +721,12 @@ function renderExpansions() {
   });
 
   // Render combined Promos & Solo Decks card
-  if (soloGroups.length > 0) {
+  let visibleSoloGroups = soloGroups;
+  if (filterTitans) {
+    visibleSoloGroups = soloGroups.filter(g => !!titanMap[g.Decks[0]]);
+  }
+
+  if (visibleSoloGroups.length > 0) {
     const card = document.createElement('div');
     card.className = 'expansion-card promo-card';
 
@@ -687,6 +735,8 @@ function renderExpansions() {
     imgWrapper.className = 'expansion-cover-wrapper';
     imgWrapper.style.cursor = 'pointer';
     imgWrapper.title = 'Click to view promo details & deck descriptions';
+    
+    const allPromoDecks = visibleSoloGroups.map(g => g.Decks[0]);
     imgWrapper.addEventListener('click', () => {
       openExpansionModal({
         GroupTitle: "Promos & Solo Decks",
@@ -698,7 +748,7 @@ function renderExpansions() {
     const coversGrid = document.createElement('div');
     coversGrid.className = 'promo-covers-grid';
     
-    soloGroups.forEach(g => {
+    visibleSoloGroups.forEach(g => {
       if (g.Image) {
         const miniImg = document.createElement('img');
         miniImg.src = resolveImagePath(g.Image);
@@ -733,7 +783,6 @@ function renderExpansions() {
     const list = document.createElement('div');
     list.className = 'deck-list';
 
-    const allPromoDecks = soloGroups.map(g => g.Decks[0]);
     const allSelected = allPromoDecks.every(deck => selectedDecks.has(deck));
     const anySelected = allPromoDecks.some(deck => selectedDecks.has(deck));
     checkbox.checked = allSelected;
@@ -743,7 +792,7 @@ function renderExpansions() {
       card.classList.add('selected-card');
     }
 
-    soloGroups.forEach(g => {
+    visibleSoloGroups.forEach(g => {
       const deck = g.Decks[0];
       const isSelected = selectedDecks.has(deck);
       const item = document.createElement('label');
@@ -762,7 +811,7 @@ function renderExpansions() {
       
       const textSpan = document.createElement('span');
       textSpan.className = 'deck-text';
-      textSpan.textContent = deck;
+      textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
       
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
@@ -933,7 +982,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck1, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck1}</span>
+            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
           </div>
         </div>
@@ -945,7 +994,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck2}</span>
+            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
           </div>
         </div>
@@ -974,6 +1023,13 @@ document.addEventListener('DOMContentLoaded', () => {
       applyProfile(e.target.value);
       renderExpansions();
       updateCounts();
+    });
+  }
+
+  const titanFilterCheck = document.getElementById('titan-filter-check');
+  if (titanFilterCheck) {
+    titanFilterCheck.addEventListener('change', () => {
+      renderExpansions();
     });
   }
 });

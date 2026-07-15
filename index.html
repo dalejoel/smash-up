@@ -60,8 +60,12 @@
           <input type="checkbox" id="balance-check" checked>
           <label for="balance-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Avoid Bad Pairings (Balanced)</label>
         </div>
+        <div style="display: flex; align-items: center; gap: 0.65rem; margin: 0.25rem 0 0.5rem 0; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="titan-filter-check">
+          <label for="titan-filter-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Show Only Decks with Titans</label>
+        </div>
         <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1.25rem; margin-top: -0.25rem;">
-          Prevents assigning counter-productive deck pairs (like Ghosts + card-drawing factions) to the same player, guaranteeing a fun and synergistic gameplay experience for everyone.
+          Filters the checklist to display only the expansions and factions that have associated Titan cards.
         </p>
 
         <button class="btn-primary" id="pick-btn">
