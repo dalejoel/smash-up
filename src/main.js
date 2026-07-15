@@ -449,7 +449,16 @@ function openExpansionModal(group) {
 const profiles = {
   "joel-dale": {
     name: "Joel Dale",
-    excludeGroups: ["Smash Up: Marvel", "Smash Up: Disney Edition", "Munchkin"]
+    excludeGroups: [
+      "Smash Up: Marvel",
+      "Smash Up: Disney Edition",
+      "Munchkin",
+      "World Tour: International Incident",
+      "World Tour: Culture Shock",
+      "Goblins Promo Deck",
+      "Knights of the Round Table Promo Deck",
+      "Teens Promo Deck"
+    ]
   },
   "all-decks": {
     name: "Complete Collection",
