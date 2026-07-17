@@ -237,7 +237,11 @@ const customDeckIcons = {
   "Ancient Incas": "images/covers/ancientincas.png",
   "Grimms' Fairy Tales": "images/covers/grimmsfairytales.png",
   "Polynesian Voyagers": "images/covers/polynesianvoyagers.png",
-  "Russian Fairy Tales": "images/covers/russianfairytales.png"
+  "Russian Fairy Tales": "images/covers/russianfairytales.png",
+  "Adolescent Epic Geckos": "images/covers/adolescentepicgeckos.png",
+  "G.I. Gerald": "images/covers/gigerald.png",
+  "Pearl and the Images": "images/covers/pearlandtheimages.png",
+  "Rulers of the Cosmos": "images/covers/rulersofthecosmos.png"
 };
 
 const titanMap = {
@@ -466,6 +470,11 @@ const deckDescriptions = {
   "Backtimers": "Manipulates time, replaying cards and resetting actions.",
   "Extramorphs": "Parasitic minions that evolve and feed on opposing minions.",
   "Wraithrustlers": "Traps spirits and opposing minions, containing them for points.",
+  // Half the Battle
+  "Adolescent Epic Geckos": "Tags minions in and out of play, taking advantage of quick swaps and powerful two-action turns.",
+  "G.I. Gerald": "Utilizes specialized military options and introduces new card-type synergies for versatile play.",
+  "Pearl and the Images": "Builds rhythm and plays like an 80s girl band, synergizing together to buff each other's power.",
+  "Rulers of the Cosmos": "Deploys powerful cosmic talents and rules the board with ongoing command abilities.",
   // Promos / Extras
   "Geeks": "Rulebook lawyering! Cancels actions, controls decks, and disrupts standard rules.",
   "All-Stars": "High-synergy deck featuring the best cards from across various factions.",
@@ -563,7 +572,6 @@ const profiles = {
   "joel-dale": {
     name: "Joel Dale",
     excludeGroups: [
-      "Smash Up: Marvel",
       "Smash Up: Disney Edition",
       "Munchkin",
       "World Tour: International Incident",
@@ -572,7 +580,8 @@ const profiles = {
       "Knights of the Round Table Promo Deck",
       "Teens Promo Deck",
       "Clowns Promo Deck",
-      "Slashers Promo Deck"
+      "Slashers Promo Deck",
+      "Half the Battle"
     ]
   },
   "all-decks": {

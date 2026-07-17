@@ -2,7 +2,7 @@
   "CardGroups": [
     {
       "GroupTitle": "Smash Up Core Decks",
-      "Image": "images/covers/Untitled-design.png",
+      "Image": "images/covers/coreset.png",
       "Decks": ["Pirates", "Ninja", "Zombies", "Robots", "Dinosaurs", "Wizards", "Tricksters", "Aliens"]
     },
     {
@@ -139,6 +139,11 @@
       "GroupTitle": "Clowns Promo Deck",
       "Image": "images/covers/clowns.png",
       "Decks": ["Clowns"]
+    },
+    {
+      "GroupTitle": "Half the Battle",
+      "Image": "images/covers/halfthebattle.png",
+      "Decks": ["Adolescent Epic Geckos", "G.I. Gerald", "Pearl and the Images", "Rulers of the Cosmos"]
     }
   ]
 }
