@@ -413,7 +413,7 @@ const factionTags = {
   "Rulers of the Cosmos": ["versatile"]
 };
 
-function evaluateSynergy(factionA, factionB) {
+function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = false) {
   if (!factionA || !factionB) return null;
   
   const pair = [factionA, factionB].sort();
@@ -494,10 +494,79 @@ function evaluateSynergy(factionA, factionB) {
     score += 1;
   }
   
-  let tier = "b";
-  let ratingName = "Good / Stable";
+  // Specific Revamped vs Normal Faction adjustments
+  const checkRevampedAdjustment = (name, isRevamped) => {
+    if (name === "Vampires") {
+      if (isRevamped) {
+        score += 1;
+        reasons.push("Vampires (Revamped) features fast counter placement and self-destruction synergy.");
+      } else {
+        score -= 2;
+        reasons.push("Vampires (Normal) has slow counter generation and relies on destroying opposing minions, making it clunky to set up.");
+      }
+    }
+    if (name === "Giant Ants") {
+      if (isRevamped) {
+        score += 1;
+        reasons.push("Giant Ants (Revamped) can move counters much more fluidly.");
+      } else {
+        score -= 1;
+        reasons.push("Giant Ants (Normal) is limited by slow counter transfer speeds.");
+      }
+    }
+    if (name === "Bear Cavalry") {
+      if (isRevamped) {
+        score += 1;
+        reasons.push("Bear Cavalry (Revamped) has much stronger base placement and movement destruction synergy.");
+      }
+    }
+  };
+
+  checkRevampedAdjustment(factionA, isRevampedA);
+  checkRevampedAdjustment(factionB, isRevampedB);
   
-  if (score >= 4) {
+  const isAntiSynergy = isPairAntiSynergistic(factionA, isRevampedA, factionB, isRevampedB) || score < 0;
+  
+  let isSubOptimal = false;
+  
+  if ((factionA === "Vampires" && isRevampedA && factionB === "Steampunks") || (factionB === "Vampires" && isRevampedB && factionA === "Steampunks")) {
+    isSubOptimal = true;
+    reasons.push("Vampires (Revamped) focuses on minion self-destruction and power counters, which conflicts with Steampunks' slow base action attachment strategy, leaving both engines running independently.");
+  }
+
+  if ((factionA === "Tricksters" && isRevampedA && factionB === "Robots") || (factionB === "Tricksters" && isRevampedB && factionA === "Robots")) {
+    isSubOptimal = true;
+    reasons.push("Tricksters (Revamped) focuses on base-cluttering disruption and slowing down opponents, which slows down the rapid base-racing speed of Robots.");
+  }
+
+  if ((factionA === "Super Spies" && isRevampedA && factionB === "Dinosaurs") || (factionB === "Super Spies" && isRevampedB && factionA === "Dinosaurs")) {
+    isSubOptimal = true;
+    reasons.push("Super Spies (Revamped) manipulates cards and decks, lacking the explosive power or counter synergy to support Dinosaurs' brute-force minions.");
+  }
+
+  if ((factionA === "Giant Ants" && isRevampedA && factionB === "Ignobles") || (factionB === "Giant Ants" && isRevampedB && factionA === "Ignobles")) {
+    isSubOptimal = true;
+    reasons.push("Giant Ants (Revamped) needs to stack power counters on its own minions. Ignobles constantly give away control of their minions, which would hand over your hard-earned power counters to the opponent.");
+  }
+
+  if ((factionA === "Bear Cavalry" && isRevampedA && factionB === "Ninja") || (factionB === "Bear Cavalry" && isRevampedB && factionA === "Ninja")) {
+    isSubOptimal = true;
+    reasons.push("Bear Cavalry (Revamped) moves minions and forces bases to trigger early, which disrupts the Ninjas' strategy of keeping cards hidden in hand for surprise base-scoring bursts.");
+  }
+
+  let tier = "c";
+  let ratingName = "Standard / Fair";
+  
+  if (isAntiSynergy) {
+    tier = "anti";
+    ratingName = "Anti-Synergy";
+    if (reasons.length === 0) {
+      reasons.push("These factions have clashing playstyles, slow pacing, or opposing mechanics that make them clunky or anti-synergistic when played together.");
+    }
+  } else if (isSubOptimal) {
+    tier = "d";
+    ratingName = "Sub-Optimal / Weak";
+  } else if (score >= 4) {
     tier = "a";
     ratingName = "Strong Synergy";
   } else if (score >= 2) {
@@ -541,40 +610,56 @@ function openDeckArtModal(deckName) {
 
 window.openDeckArtModal = openDeckArtModal;
 
-// Anti-synergy lists (factions that actively clash or make the game unfun/clunky if paired for a single player)
-const antiSynergyPairs = [
-  // Ghosts want empty hand; hoarding/drawing factions bloat it or require saving cards
-  ["Ghosts", "Wizards"],
-  ["Ghosts", "Mega Troopers"],
-  ["Ghosts", "Elves"],
-  ["Ghosts", "Mages"],
-  ["Ghosts", "Kitty Cats"],
-  ["Ghosts", "Geeks"],
-  ["Ghosts", "Giant Ants"],
-  ["Ghosts", "Mad Scientists"],
+// Anti-synergy checker taking revamped versions into account
+function isPairAntiSynergistic(factionA, isRevampedA, factionB, isRevampedB) {
+  const normA = factionA.trim();
+  const normB = factionB.trim();
   
-  // Innsmouth wants Locals; copy/deck-manipulation factions get dead value
-  ["Innsmouth", "Shape Shifters"],
-  ["Innsmouth", "Super Spies"],
-  ["Innsmouth", "Teddybears"],
+  // Standard clashing lists for Ghosts
+  const ghostsClashList = ["Wizards", "Elves", "Mages", "Kitty Cats", "Geeks", "Mad Scientists"];
+  if ((normA === "Ghosts" && ghostsClashList.includes(normB)) || (normB === "Ghosts" && ghostsClashList.includes(normA))) {
+    return true;
+  }
   
-  // Steampunks focus heavily on base action attachments; Robots are purely minion swarm, creating hand blocks
-  ["Steampunks", "Robots"],
-  
-  // Ignobles hand over control of minions; Elves rely on keeping value/cooperation setups that clash
-  ["Ignobles", "Elves"]
-];
+  // Ghosts + Mega Troopers: Mega Troopers Normal draws too many cards and clashes with Ghosts.
+  // Mega Troopers Revamped is focused on power counters and action plays, resolving this hand bloat.
+  if ((normA === "Ghosts" && normB === "Mega Troopers" && !isRevampedB) || (normB === "Ghosts" && normA === "Mega Troopers" && !isRevampedA)) {
+    return true;
+  }
 
-function getBadPartners(deckName) {
-  const norm = deckName.toLowerCase().trim();
-  const partners = new Set();
-  antiSynergyPairs.forEach(([d1, d2]) => {
-    const nd1 = d1.toLowerCase().trim();
-    const nd2 = d2.toLowerCase().trim();
-    if (nd1 === norm) partners.add(nd2);
-    if (nd2 === norm) partners.add(nd1);
-  });
-  return partners;
+  // Ghosts + Giant Ants: Giant Ants Normal clutters hand. Giant Ants Revamped is fine.
+  if ((normA === "Ghosts" && normB === "Giant Ants" && !isRevampedB) || (normB === "Ghosts" && normA === "Giant Ants" && !isRevampedA)) {
+    return true;
+  }
+
+  // Innsmouth clashes
+  const innsmouthClashList = ["Shape Shifters", "Teddybears"];
+  if ((normA === "Innsmouth" && innsmouthClashList.includes(normB)) || (normB === "Innsmouth" && innsmouthClashList.includes(normA))) {
+    return true;
+  }
+  
+  // Innsmouth + Super Spies: Normal Super Spies relies on deck manipulation that clashes with Innsmouth's rapid search of same name.
+  if ((normA === "Innsmouth" && normB === "Super Spies" && !isRevampedB) || (normB === "Innsmouth" && normA === "Super Spies" && !isRevampedA)) {
+    return true;
+  }
+
+  // Steampunks + Robots
+  if ((normA === "Steampunks" && normB === "Robots") || (normB === "Steampunks" && normA === "Robots")) {
+    return true;
+  }
+
+  // Ignobles + Elves
+  if ((normA === "Ignobles" && normB === "Elves") || (normB === "Ignobles" && normA === "Elves")) {
+    return true;
+  }
+  
+  // Vampires (Normal) is too slow and clunky for fast tempo/swarm factions
+  const normalVampiresClashes = ["Robots", "Mythic Horses", "Zombies", "Halflings"];
+  if ((normA === "Vampires" && !isRevampedA && normalVampiresClashes.includes(normB)) || (normB === "Vampires" && !isRevampedB && normalVampiresClashes.includes(normA))) {
+    return true;
+  }
+
+  return false;
 }
 
 function resolveImagePath(path) {
@@ -1284,8 +1369,12 @@ function distributeDecks() {
     // Filter available pool for second deck if balancing is checked
     let availablePool = [...pool];
     if (shouldBalance) {
-      const badPartners = getBadPartners(deck1);
-      availablePool = availablePool.filter(d => !badPartners.has(d.toLowerCase().trim()));
+      availablePool = availablePool.filter(d => {
+        const isRev1 = revisedFactions.includes(deck1);
+        const isRev2 = revisedFactions.includes(d);
+        const synergy = evaluateSynergy(deck1, d, isRev1, isRev2);
+        return synergy.tier !== "anti" && synergy.tier !== "d";
+      });
     }
 
     // Fallback if no balanced decks remain in pool
@@ -1320,18 +1409,21 @@ function distributeDecks() {
     card.style.animationDelay = `${index * 80}ms`;
 
     const combo = getComboName(assignment.deck1, assignment.deck2);
+    const isRevamped1 = revisedFactions.includes(assignment.deck1);
+    const isRevamped2 = revisedFactions.includes(assignment.deck2);
+    const synergy = evaluateSynergy(assignment.deck1, assignment.deck2, isRevamped1, isRevamped2);
 
     card.innerHTML = `
       <div class="player-header">
         <span class="player-name">Player ${assignment.playerIndex}</span>
-        <span class="player-badge">Active</span>
+        <span class="synergy-tier-badge tier-${synergy.tier}" style="transform: scale(0.9); transform-origin: right center; font-size: 0.75rem; padding: 0.25rem 0.65rem;">${synergy.ratingName}</span>
       </div>
       <div class="combo-title">${combo}</div>
       <div class="player-decks">
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck1, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}${revisedFactions.includes(assignment.deck1) ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
+            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}${isRevamped1 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
           </div>
         </div>
@@ -1343,7 +1435,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}${revisedFactions.includes(assignment.deck2) ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
+            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}${isRevamped2 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
           </div>
         </div>
@@ -1375,17 +1467,41 @@ function populateSynergyDropdowns() {
 
   allDecks.forEach(deck => {
     const isRevised = revisedFactions.includes(deck);
-    const label = deck + (isRevised ? ' (✨ Revised)' : '');
     
-    const optA = document.createElement('option');
-    optA.value = deck;
-    optA.textContent = label;
-    selectA.appendChild(optA);
+    if (isRevised) {
+      // Normal option
+      const optANormal = document.createElement('option');
+      optANormal.value = deck;
+      optANormal.textContent = `${deck} (Normal)`;
+      selectA.appendChild(optANormal);
 
-    const optB = document.createElement('option');
-    optB.value = deck;
-    optB.textContent = label;
-    selectB.appendChild(optB);
+      const optBNormal = document.createElement('option');
+      optBNormal.value = deck;
+      optBNormal.textContent = `${deck} (Normal)`;
+      selectB.appendChild(optBNormal);
+
+      // Revamped option
+      const optARevamped = document.createElement('option');
+      optARevamped.value = `${deck}::revamped`;
+      optARevamped.textContent = `${deck} (Revamped)`;
+      selectA.appendChild(optARevamped);
+
+      const optBRevamped = document.createElement('option');
+      optBRevamped.value = `${deck}::revamped`;
+      optBRevamped.textContent = `${deck} (Revamped)`;
+      selectB.appendChild(optBRevamped);
+    } else {
+      // Standard option
+      const optA = document.createElement('option');
+      optA.value = deck;
+      optA.textContent = deck;
+      selectA.appendChild(optA);
+
+      const optB = document.createElement('option');
+      optB.value = deck;
+      optB.textContent = deck;
+      selectB.appendChild(optB);
+    }
   });
 }
 
@@ -1411,17 +1527,31 @@ function updateSynergyAnalysis() {
     return;
   }
 
-  const result = evaluateSynergy(valA, valB);
+  // Parse values
+  const nameA = valA.split('::')[0];
+  const isRevampedA = valA.endsWith('::revamped');
+  const nameB = valB.split('::')[0];
+  const isRevampedB = valB.endsWith('::revamped');
+
+  if (nameA === nameB) {
+    cardContainer.innerHTML = `
+      <div class="synergy-placeholder">
+        <div class="placeholder-icon">⚠️</div>
+        <h3>Select Different Factions</h3>
+        <p>Please select two different factions to analyze their synergy. You cannot pair the normal and revamped versions of the same faction.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const result = evaluateSynergy(nameA, nameB, isRevampedA, isRevampedB);
   if (!result) return;
 
-  const isRevisedA = revisedFactions.includes(valA);
-  const isRevisedB = revisedFactions.includes(valB);
-
   let revisedHtml = '';
-  if (isRevisedA || isRevisedB) {
+  if (isRevampedA || isRevampedB) {
     const revisedList = [];
-    if (isRevisedA) revisedList.push(`<strong>${valA}</strong>`);
-    if (isRevisedB) revisedList.push(`<strong>${valB}</strong>`);
+    if (isRevampedA) revisedList.push(`<strong>${nameA} (Revamped)</strong>`);
+    if (isRevampedB) revisedList.push(`<strong>${nameB} (Revamped)</strong>`);
     
     revisedHtml = `
       <div class="synergy-revised-section">
@@ -1434,9 +1564,12 @@ function updateSynergyAnalysis() {
     `;
   }
 
+  const labelA = nameA + (isRevampedA ? ' (Revamped)' : ' (Normal)');
+  const labelB = nameB + (isRevampedB ? ' (Revamped)' : ' (Normal)');
+
   cardContainer.innerHTML = `
     <div class="synergy-header">
-      <div class="synergy-pair-names">${valA} + ${valB}</div>
+      <div class="synergy-pair-names">${labelA} + ${labelB}</div>
       <span class="synergy-tier-badge tier-${result.tier}">${result.ratingName}</span>
     </div>
     <div class="synergy-body">

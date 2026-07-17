@@ -1016,6 +1016,12 @@ input[type="checkbox"] {
   color: #3b82f6;
 }
 
+.tier-d {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+}
+
 .tier-anti {
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.25);
