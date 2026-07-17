@@ -60,9 +60,59 @@
           </select>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.65rem; margin: 0.25rem 0 0.5rem 0; cursor: pointer; user-select: none;">
-          <input type="checkbox" id="balance-check" checked>
-          <label for="balance-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Avoid Bad Pairings (Balanced)</label>
+        <!-- Synergy Filtering Panel -->
+        <div class="synergy-filter-container">
+          <div class="synergy-filter-header">
+            <span class="field-label" style="margin-bottom: 0;">Synergy Tier Limits</span>
+            <span class="synergy-count-badge" id="allowed-pairs-badge">0 Pairs</span>
+          </div>
+
+          <!-- Quick Presets Row -->
+          <div class="synergy-presets">
+            <button type="button" class="preset-btn" data-preset="chaos">Chaos</button>
+            <button type="button" class="preset-btn active" data-preset="standard">Workable</button>
+            <button type="button" class="preset-btn" data-preset="mid">Mid-Tier</button>
+            <button type="button" class="preset-btn" data-preset="competitive">Elite Only</button>
+          </div>
+
+          <!-- Interactive Chips Grid -->
+          <div class="synergy-chips-grid">
+            <!-- S-Tier -->
+            <button type="button" class="synergy-chip active active-s" data-tier="s" title="S-Tier (God-Tier Combos)">
+              <span class="chip-tier-letter">S</span>
+              <span class="chip-label">God-Tier</span>
+            </button>
+            
+            <!-- A-Tier -->
+            <button type="button" class="synergy-chip active active-a" data-tier="a" title="A-Tier (Strong Synergies)">
+              <span class="chip-tier-letter">A</span>
+              <span class="chip-label">Strong</span>
+            </button>
+            
+            <!-- B-Tier -->
+            <button type="button" class="synergy-chip active active-b" data-tier="b" title="B-Tier (Good/Stable Combos)">
+              <span class="chip-tier-letter">B</span>
+              <span class="chip-label">Good</span>
+            </button>
+            
+            <!-- C-Tier -->
+            <button type="button" class="synergy-chip active active-c" data-tier="c" title="C-Tier (Standard/Fair Matchups)">
+              <span class="chip-tier-letter">C</span>
+              <span class="chip-label">Fair</span>
+            </button>
+            
+            <!-- D-Tier -->
+            <button type="button" class="synergy-chip" data-tier="d" title="D-Tier (Sub-optimal/Weak Synergies)">
+              <span class="chip-tier-letter">D</span>
+              <span class="chip-label">Weak</span>
+            </button>
+            
+            <!-- Anti-Synergy -->
+            <button type="button" class="synergy-chip" data-tier="anti" title="Anti-Synergy (Clashing Mechanics)">
+              <span class="chip-tier-letter">Ø</span>
+              <span class="chip-label">Clash</span>
+            </button>
+          </div>
         </div>
         <div style="display: flex; align-items: center; gap: 0.65rem; margin: 0.25rem 0 0.5rem 0; cursor: pointer; user-select: none;">
           <input type="checkbox" id="titan-filter-check">

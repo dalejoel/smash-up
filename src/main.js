@@ -1312,11 +1312,388 @@ function renderExpansions() {
   }
 }
 
+// Graph matching helper to check if a valid draft exists with current settings
+function checkValidDraftExists(activeDecks, allowedTiers, numPlayers) {
+  const adj = new Map();
+  activeDecks.forEach(d => adj.set(d, []));
+  
+  let edgeCount = 0;
+  for (let i = 0; i < activeDecks.length; i++) {
+    const d1 = activeDecks[i];
+    const isRev1 = revisedFactions.includes(d1);
+    for (let j = i + 1; j < activeDecks.length; j++) {
+      const d2 = activeDecks[j];
+      const isRev2 = revisedFactions.includes(d2);
+      const synergy = evaluateSynergy(d1, d2, isRev1, isRev2);
+      if (allowedTiers.includes(synergy.tier)) {
+        adj.get(d1).push(d2);
+        adj.get(d2).push(d1);
+        edgeCount++;
+      }
+    }
+  }
+
+  if (edgeCount < numPlayers) {
+    return false;
+  }
+
+  const used = new Set();
+  const deckList = [...activeDecks];
+  
+  function dfs(deckIdx, matchesFound) {
+    if (matchesFound === numPlayers) {
+      return true;
+    }
+    if (deckIdx >= deckList.length) {
+      return false;
+    }
+    
+    const deck = deckList[deckIdx];
+    if (used.has(deck)) {
+      return dfs(deckIdx + 1, matchesFound);
+    }
+    
+    // Try matching deck with each of its unused neighbors
+    const neighbors = adj.get(deck);
+    for (const neighbor of neighbors) {
+      if (!used.has(neighbor)) {
+        used.add(deck);
+        used.add(neighbor);
+        if (dfs(deckIdx + 1, matchesFound + 1)) {
+          return true;
+        }
+        used.delete(deck);
+        used.delete(neighbor);
+      }
+    }
+    
+    // Try leaving deck unmatched
+    return dfs(deckIdx + 1, matchesFound);
+  }
+  
+  return dfs(0, 0);
+}
+
+// Randomized maximum matching draft generator using backtracking
+function generateRandomDraft(activeDecks, allowedTiers, numPlayers) {
+  const adj = new Map();
+  activeDecks.forEach(d => adj.set(d, []));
+  
+  for (let i = 0; i < activeDecks.length; i++) {
+    const d1 = activeDecks[i];
+    const isRev1 = revisedFactions.includes(d1);
+    for (let j = i + 1; j < activeDecks.length; j++) {
+      const d2 = activeDecks[j];
+      const isRev2 = revisedFactions.includes(d2);
+      const synergy = evaluateSynergy(d1, d2, isRev1, isRev2);
+      if (allowedTiers.includes(synergy.tier)) {
+        adj.get(d1).push(d2);
+        adj.get(d2).push(d1);
+      }
+    }
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  const shuffledDecks = shuffle([...activeDecks]);
+  const used = new Set();
+  const assignments = [];
+
+  function dfs(deckIdx, matchesFound) {
+    if (matchesFound === numPlayers) {
+      return true;
+    }
+    if (deckIdx >= shuffledDecks.length) {
+      return false;
+    }
+    
+    const deck = shuffledDecks[deckIdx];
+    if (used.has(deck)) {
+      return dfs(deckIdx + 1, matchesFound);
+    }
+    
+    // Try matching deck with each of its unused neighbors in random order
+    const neighbors = shuffle([...adj.get(deck)]);
+    for (const neighbor of neighbors) {
+      if (!used.has(neighbor)) {
+        used.add(deck);
+        used.add(neighbor);
+        assignments.push({
+          playerIndex: matchesFound + 1,
+          deck1: deck,
+          deck2: neighbor
+        });
+        
+        if (dfs(deckIdx + 1, matchesFound + 1)) {
+          return true;
+        }
+        
+        assignments.pop();
+        used.delete(deck);
+        used.delete(neighbor);
+      }
+    }
+    
+    // Try leaving deck unmatched
+    return dfs(deckIdx + 1, matchesFound);
+  }
+
+  if (dfs(0, 0)) {
+    return assignments;
+  }
+  return null;
+}
+
+function getSelectedTiers() {
+  const activeChips = document.querySelectorAll('.synergy-chip.active');
+  return Array.from(activeChips).map(chip => chip.dataset.tier);
+}
+
+function applyPreset(presetName) {
+  const chips = document.querySelectorAll('.synergy-chip');
+  chips.forEach(chip => {
+    const tier = chip.dataset.tier;
+    let active = false;
+    
+    if (presetName === 'chaos') {
+      active = true;
+    } else if (presetName === 'standard') {
+      active = ['s', 'a', 'b', 'c'].includes(tier);
+    } else if (presetName === 'mid') {
+      active = ['b', 'c'].includes(tier);
+    } else if (presetName === 'competitive') {
+      active = ['s', 'a'].includes(tier);
+    }
+    
+    if (active) {
+      chip.classList.add('active');
+      chip.classList.add(`active-${tier}`);
+    } else {
+      chip.classList.remove('active');
+      chip.classList.remove(`active-${tier}`);
+    }
+  });
+  
+  updateBalanceModeDropdown();
+}
+
+function handleChipToggle(chip) {
+  const tier = chip.dataset.tier;
+  const isActive = chip.classList.contains('active');
+  
+  if (isActive) {
+    chip.classList.remove('active');
+    chip.classList.remove(`active-${tier}`);
+  } else {
+    chip.classList.add('active');
+    chip.classList.add(`active-${tier}`);
+  }
+  
+  // Deactivate preset buttons
+  const presets = document.querySelectorAll('.preset-btn');
+  presets.forEach(p => p.classList.remove('active'));
+  
+  checkPresetMatches();
+  updateBalanceModeDropdown(true);
+}
+
+function checkPresetMatches() {
+  const activeChips = Array.from(document.querySelectorAll('.synergy-chip.active')).map(c => c.dataset.tier).sort();
+  const presets = document.querySelectorAll('.preset-btn');
+  
+  presets.forEach(p => {
+    if (p.disabled) {
+      p.classList.remove('active');
+      return;
+    }
+    const name = p.dataset.preset;
+    let target = [];
+    if (name === 'chaos') target = ['s', 'a', 'b', 'c', 'd', 'anti'];
+    else if (name === 'standard') target = ['s', 'a', 'b', 'c'];
+    else if (name === 'mid') target = ['b', 'c'];
+    else if (name === 'competitive') target = ['s', 'a'];
+    
+    target.sort();
+    
+    if (activeChips.length === target.length && activeChips.every((val, index) => val === target[index])) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+}
+
+function updateBalanceModeDropdown(isManualToggle = false) {
+  const playerSelect = document.getElementById('player-select');
+  const badge = document.getElementById('allowed-pairs-badge');
+  const pickBtn = document.getElementById('pick-btn');
+  const errorContainer = document.getElementById('error-container');
+  if (!playerSelect) return;
+
+  const numPlayers = parseInt(playerSelect.value, 10);
+  const activeDecks = [...selectedDecks];
+  const decksNeeded = numPlayers ? numPlayers * 2 : 0;
+
+  let s_a_count = 0;
+  let s_a_b_count = 0;
+  let s_a_b_c_count = 0;
+  let s_a_b_c_d_count = 0;
+  let mid_tier_count = 0;
+
+  const strongFactions = new Set();
+  const goodFactions = new Set();
+  const standardFactions = new Set();
+  const noAntiFactions = new Set();
+  const midTierFactions = new Set();
+
+  for (let i = 0; i < activeDecks.length; i++) {
+    for (let j = i + 1; j < activeDecks.length; j++) {
+      const isRev1 = revisedFactions.includes(activeDecks[i]);
+      const isRev2 = revisedFactions.includes(activeDecks[j]);
+      const synergy = evaluateSynergy(activeDecks[i], activeDecks[j], isRev1, isRev2);
+      
+      const t = synergy.tier;
+      if (t === 's' || t === 'a') {
+        s_a_count++;
+        strongFactions.add(activeDecks[i]);
+        strongFactions.add(activeDecks[j]);
+      }
+      if (t === 's' || t === 'a' || t === 'b') {
+        s_a_b_count++;
+        goodFactions.add(activeDecks[i]);
+        goodFactions.add(activeDecks[j]);
+      }
+      if (t === 's' || t === 'a' || t === 'b' || t === 'c') {
+        s_a_b_c_count++;
+        standardFactions.add(activeDecks[i]);
+        standardFactions.add(activeDecks[j]);
+      }
+      if (t !== 'anti') {
+        s_a_b_c_d_count++;
+        noAntiFactions.add(activeDecks[i]);
+        noAntiFactions.add(activeDecks[j]);
+      }
+      if (t === 'b' || t === 'c') {
+        mid_tier_count++;
+        midTierFactions.add(activeDecks[i]);
+        midTierFactions.add(activeDecks[j]);
+      }
+    }
+  }
+
+  const activeTiers = getSelectedTiers();
+  let allowedPairsCount = 0;
+  const activeUniqueFactions = new Set();
+
+  for (let i = 0; i < activeDecks.length; i++) {
+    for (let j = i + 1; j < activeDecks.length; j++) {
+      const isRev1 = revisedFactions.includes(activeDecks[i]);
+      const isRev2 = revisedFactions.includes(activeDecks[j]);
+      const synergy = evaluateSynergy(activeDecks[i], activeDecks[j], isRev1, isRev2);
+      if (activeTiers.includes(synergy.tier)) {
+        allowedPairsCount++;
+        activeUniqueFactions.add(activeDecks[i]);
+        activeUniqueFactions.add(activeDecks[j]);
+      }
+    }
+  }
+
+  if (badge) {
+    badge.textContent = `${allowedPairsCount} Pairs (${activeUniqueFactions.size} Decks)`;
+  }
+
+  const effectivePlayers = numPlayers || 2;
+  const effectiveDecksNeeded = effectivePlayers * 2;
+
+  const presetChaos = document.querySelector('.preset-btn[data-preset="chaos"]');
+  const presetStandard = document.querySelector('.preset-btn[data-preset="standard"]');
+  const presetMid = document.querySelector('.preset-btn[data-preset="mid"]');
+  const presetCompetitive = document.querySelector('.preset-btn[data-preset="competitive"]');
+
+  if (presetStandard) {
+    const isUnavailable = s_a_b_c_count < effectivePlayers || standardFactions.size < effectiveDecksNeeded;
+    presetStandard.disabled = isUnavailable;
+    presetStandard.textContent = `Workable (${isUnavailable ? 'Unavailable: ' : ''}${s_a_b_c_count} pairs, ${standardFactions.size} decks)`;
+  }
+  if (presetMid) {
+    const isUnavailable = mid_tier_count < effectivePlayers || midTierFactions.size < effectiveDecksNeeded;
+    presetMid.disabled = isUnavailable;
+    presetMid.textContent = `Mid-Tier (${isUnavailable ? 'Unavailable: ' : ''}${mid_tier_count} pairs, ${midTierFactions.size} decks)`;
+  }
+  if (presetCompetitive) {
+    const isUnavailable = s_a_count < effectivePlayers || strongFactions.size < effectiveDecksNeeded;
+    presetCompetitive.disabled = isUnavailable;
+    presetCompetitive.textContent = `Elite Only (${isUnavailable ? 'Unavailable: ' : ''}${s_a_count} pairs, ${strongFactions.size} decks)`;
+  }
+
+  if (!isManualToggle) {
+    const activePreset = document.querySelector('.preset-btn.active');
+    if (activePreset && activePreset.disabled) {
+      activePreset.classList.remove('active');
+      if (presetStandard && !presetStandard.disabled) {
+        presetStandard.classList.add('active');
+        applyPreset('standard');
+      } else {
+        if (presetChaos) {
+          presetChaos.classList.add('active');
+          applyPreset('chaos');
+        }
+      }
+    }
+  }
+
+  // Pre-validation block
+  if (pickBtn && errorContainer) {
+    pickBtn.disabled = false;
+    pickBtn.innerHTML = `<span>⚡</span> Pick Decks`;
+    errorContainer.innerHTML = '';
+
+    if (!numPlayers) {
+      return;
+    }
+
+    if (activeDecks.length < decksNeeded) {
+      pickBtn.disabled = true;
+      pickBtn.innerHTML = `<span>⚠️</span> Insufficient Decks`;
+      errorContainer.innerHTML = `
+        <div class="alert-error">
+          Not enough decks selected! You have selected ${activeDecks.length} decks, but need at least ${decksNeeded} decks for ${numPlayers} players.
+        </div>`;
+      return;
+    }
+
+    const validDraftExists = checkValidDraftExists(activeDecks, activeTiers, numPlayers);
+    if (!validDraftExists) {
+      pickBtn.disabled = true;
+      pickBtn.innerHTML = `<span>⚠️</span> Invalid Synergy Settings`;
+      
+      let tierNames = activeTiers.map(t => {
+        const chip = document.querySelector(`.synergy-chip[data-tier="${t}"]`);
+        return chip ? chip.querySelector('.chip-label').textContent : t;
+      }).join(', ');
+      
+      errorContainer.innerHTML = `
+        <div class="alert-error">
+          <strong>Draft Generation Blocked:</strong> The selected synergy tiers (${tierNames || 'none selected'}) only have **${allowedPairsCount} compatible pairs** using **${activeUniqueFactions.size} unique decks**. 
+          To support ${numPlayers} players, you need at least **${numPlayers} independent pairs** using **${decksNeeded} unique decks**.
+          Please select more synergy tiers or enable more expansions.
+        </div>`;
+    }
+  }
+}
+
 function updateCounts() {
   const activeCountBadge = document.getElementById('active-count');
   if (activeCountBadge) {
     activeCountBadge.textContent = selectedDecks.size;
   }
+  updateBalanceModeDropdown(false);
 }
 
 function getComboName(d1, d2) {
@@ -1347,71 +1724,37 @@ function distributeDecks() {
   }
 
   const decksNeeded = numPlayers * 2;
-  if (selectedDecks.size < decksNeeded) {
+  const activeDecks = [...selectedDecks];
+  if (activeDecks.length < decksNeeded) {
     errorContainer.innerHTML = `
       <div class="alert-error">
-        Not enough decks! You have selected ${selectedDecks.size} decks, but need at least ${decksNeeded} decks for ${numPlayers} players.
+        Not enough decks! You have selected ${activeDecks.length} decks, but need at least ${decksNeeded} decks for ${numPlayers} players.
       </div>`;
     return;
   }
 
-  // Draw process
-  const pool = [...selectedDecks];
-  const assignments = [];
-  const balanceCheck = document.getElementById('balance-check');
-  const shouldBalance = balanceCheck ? balanceCheck.checked : true;
+  const allowedTiers = getSelectedTiers();
+  const assignments = generateRandomDraft(activeDecks, allowedTiers, numPlayers);
 
-  for (let i = 0; i < numPlayers; i++) {
-    // Pick first deck randomly
-    const idx1 = Math.floor(Math.random() * pool.length);
-    const deck1 = pool.splice(idx1, 1)[0];
-
-    // Filter available pool for second deck if balancing is checked
-    let availablePool = [...pool];
-    if (shouldBalance) {
-      availablePool = availablePool.filter(d => {
-        const isRev1 = revisedFactions.includes(deck1);
-        const isRev2 = revisedFactions.includes(d);
-        const synergy = evaluateSynergy(deck1, d, isRev1, isRev2);
-        return synergy.tier !== "anti" && synergy.tier !== "d";
-      });
-    }
-
-    // Fallback if no balanced decks remain in pool
-    if (availablePool.length === 0) {
-      availablePool = [...pool];
-    }
-
-    // Pick second deck randomly from available pool
-    const idx2 = Math.floor(Math.random() * availablePool.length);
-    const deck2 = availablePool[idx2];
-    
-    // Remove the chosen second deck from main pool
-    const poolIdx = pool.indexOf(deck2);
-    if (poolIdx > -1) {
-      pool.splice(poolIdx, 1);
-    }
-
-    assignments.push({
-      playerIndex: i + 1,
-      deck1,
-      deck2
-    });
+  if (!assignments) {
+    errorContainer.innerHTML = `
+      <div class="alert-error">
+        Could not generate a valid draft. Please adjust your synergy tiers or selected expansions.
+      </div>`;
+    return;
   }
 
-  // Show section
   playersSection.removeAttribute('hidden');
 
-  // Render assignments
   assignments.forEach((assignment, index) => {
     const card = document.createElement('div');
     card.className = 'player-card';
     card.style.animationDelay = `${index * 80}ms`;
 
     const combo = getComboName(assignment.deck1, assignment.deck2);
-    const isRevamped1 = revisedFactions.includes(assignment.deck1);
-    const isRevamped2 = revisedFactions.includes(assignment.deck2);
-    const synergy = evaluateSynergy(assignment.deck1, assignment.deck2, isRevamped1, isRevamped2);
+    const isRev1 = revisedFactions.includes(assignment.deck1);
+    const isRev2 = revisedFactions.includes(assignment.deck2);
+    const synergy = evaluateSynergy(assignment.deck1, assignment.deck2, isRev1, isRev2);
 
     card.innerHTML = `
       <div class="player-header">
@@ -1423,7 +1766,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck1, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}${isRevamped1 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
+            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}${isRev1 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
           </div>
         </div>
@@ -1435,7 +1778,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}${isRevamped2 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
+            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}${isRev2 ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
           </div>
         </div>
@@ -1445,7 +1788,6 @@ function distributeDecks() {
     resultsContainer.appendChild(card);
   });
 
-  // Smooth scroll to results
   playersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1588,6 +1930,11 @@ document.addEventListener('DOMContentLoaded', () => {
     pickBtn.addEventListener('click', distributeDecks);
   }
 
+  const playerSelect = document.getElementById('player-select');
+  if (playerSelect) {
+    playerSelect.addEventListener('change', updateBalanceModeDropdown);
+  }
+
   const profileSelect = document.getElementById('profile-select');
   if (profileSelect) {
     profileSelect.addEventListener('change', (e) => {
@@ -1635,6 +1982,24 @@ document.addEventListener('DOMContentLoaded', () => {
       populateSynergyDropdowns();
     });
   }
+
+  // Preset buttons event listeners
+  const presets = document.querySelectorAll('.preset-btn');
+  presets.forEach(p => {
+    p.addEventListener('click', () => {
+      presets.forEach(btn => btn.classList.remove('active'));
+      p.classList.add('active');
+      applyPreset(p.dataset.preset);
+    });
+  });
+
+  // Synergy chips click event listeners
+  const chips = document.querySelectorAll('.synergy-chip');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      handleChipToggle(chip);
+    });
+  });
 
   // Synergy Tester dropdown change events
   const selectA = document.getElementById('faction-a-select');
