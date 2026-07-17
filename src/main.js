@@ -241,7 +241,27 @@ const customDeckIcons = {
   "Adolescent Epic Geckos": "images/covers/adolescentepicgeckos.png",
   "G.I. Gerald": "images/covers/gigerald.png",
   "Pearl and the Images": "images/covers/pearlandtheimages.png",
-  "Rulers of the Cosmos": "images/covers/rulersofthecosmos.png"
+  "Rulers of the Cosmos": "images/covers/rulersofthecosmos.png",
+
+  // Marvel official covers
+  "Avengers": "images/covers/avengers.jpg",
+  "Hydra": "images/covers/hydra.png",
+  "Kree": "images/covers/kree.jpg",
+  "Masters of Evil": "images/covers/mastersofevil.jpg",
+  "S.H.I.E.L.D.": "images/covers/shield.jpg",
+  "Sinister Six": "images/covers/sinistersix.jpg",
+  "Spider-Verse": "images/covers/spiderverse.jpg",
+  "Ultimates": "images/covers/ultimates.jpg",
+
+  // Disney official covers
+  "Aladdin": "images/covers/aladdin.jpg",
+  "Beauty and the Beast": "images/covers/beautyandthebeast.png",
+  "Big Hero 6": "images/covers/bighero6.png",
+  "Frozen": "images/covers/frozen.png",
+  "Mulan": "images/covers/mulan.jpg",
+  "The Lion King": "images/covers/thelionking.png",
+  "The Nightmare Before Christmas": "images/covers/thenightmarebeforechristmas.jpg",
+  "Wreck-It Ralph": "images/covers/wreckitralph.png"
 };
 
 const titanMap = {
@@ -2042,5 +2062,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (selectA && selectB) {
     selectA.addEventListener('change', updateSynergyAnalysis);
     selectB.addEventListener('change', updateSynergyAnalysis);
+  }
+
+  // Mobile Control Panel Collapsibility Toggles
+  const panels = document.querySelectorAll('.control-panel');
+  panels.forEach(panel => {
+    const toggleBtn = panel.querySelector('.panel-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.toggle('collapsed');
+      });
+    }
+  });
+
+  // Collapse by default on mobile screens (under 1024px)
+  if (window.innerWidth < 1024) {
+    panels.forEach(panel => {
+      panel.classList.add('collapsed');
+    });
   }
 });

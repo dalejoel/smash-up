@@ -37,8 +37,13 @@
       <section class="control-panel" id="selector-sidebar">
         <!-- Header (Fixed Top) -->
         <div class="control-panel-header">
-          <h2 class="section-title">Draft Settings</h2>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">
+          <div class="control-panel-header-title-bar">
+            <h2 class="section-title" style="margin-bottom: 0;">Draft Settings</h2>
+            <button type="button" class="panel-toggle-btn" aria-label="Toggle settings panel">
+              <span class="toggle-icon">▼</span>
+            </button>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0; margin-top: 0.5rem;">
             Select player count and trigger random deck selection.
           </p>
         </div>
@@ -167,8 +172,13 @@
       <section class="control-panel hidden" id="tester-sidebar">
         <!-- Header -->
         <div class="control-panel-header">
-          <h2 class="section-title">Synergy Tester</h2>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">
+          <div class="control-panel-header-title-bar">
+            <h2 class="section-title" style="margin-bottom: 0;">Synergy Tester</h2>
+            <button type="button" class="panel-toggle-btn" aria-label="Toggle settings panel">
+              <span class="toggle-icon">▼</span>
+            </button>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0; margin-top: 0.5rem;">
             Select two factions to evaluate their gameplay compatibility and synergy strength.
           </p>
         </div>

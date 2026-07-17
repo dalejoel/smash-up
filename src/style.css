@@ -1297,3 +1297,104 @@ input[type="checkbox"] {
   transform: none !important;
 }
 
+/* Panel Title Bar & Collapse Buttons */
+.control-panel-header-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.panel-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: none; /* Hidden on desktop */
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.panel-toggle-btn:hover {
+  color: white;
+}
+
+.toggle-icon {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-panel.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Mobile responsive styles for sidebars and pinned footer */
+@media (max-width: 1023px) {
+  .panel-toggle-btn {
+    display: flex; /* Show toggle button on mobile */
+  }
+
+  .control-panel.collapsed .control-panel-body {
+    display: none !important;
+  }
+
+  .control-panel {
+    padding: 1.25rem;
+  }
+
+  /* Fixed glassy bottom bar for mobile Pick Decks button */
+  .control-panel-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--panel-border);
+    padding: 1rem 1.5rem;
+    z-index: 150;
+    margin: 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Prevent content overlap with the pinned bottom bar */
+  body {
+    padding-bottom: 7rem;
+  }
+}
+
+/* Touch Targets (WCAG 44px+ Compliance) */
+/* Synergy Chips Target Height */
+.synergy-chip {
+  min-height: 48px; /* Safe touch target */
+  padding: 0.5rem;
+}
+
+/* Presets Target Height */
+.preset-btn {
+  min-height: 44px; /* WCAG minimum */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Deck Items List & Target Height */
+.deck-item {
+  min-height: 44px;
+  padding: 0.5rem 0.75rem; /* Expanded hit area */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Larger checkboxes */
+input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+

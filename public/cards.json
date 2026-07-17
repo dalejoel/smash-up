@@ -32,7 +32,7 @@
     },
     {
       "GroupTitle": "Munchkin",
-      "Image": "images/covers/fantasy.png",
+      "Image": "images/covers/munchkin.jpg",
       "Decks": ["Clerics", "Dwarves", "Elves", "Halflings", "Mages", "Orcs", "Thieves", "Warriors"]
     },
     {
@@ -82,7 +82,7 @@
     },
     {
       "GroupTitle": "Smash Up: Disney Edition",
-      "Image": "images/covers/DisneyBase.png",
+      "Image": "images/covers/disney.jpg",
       "Decks": ["Aladdin", "Beauty and the Beast", "Big Hero 6", "Frozen", "Mulan", "The Lion King", "The Nightmare Before Christmas", "Wreck-It Ralph"]
     },
     {
