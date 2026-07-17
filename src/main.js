@@ -276,6 +276,7 @@ const titanMap = {
   "Ninja": "Invisible Ninja",
   "Sharks": "Helicoprion",
   "Superheroes": "The Everything Glove",
+  "Tornadoes": "Category 5",
 };
 
 const revisedFactions = [
@@ -923,11 +924,18 @@ function applyProfile(profileId) {
   }
   localStorage.setItem('smashup-profile', profileId);
 
+  const titanFilterCheck = document.getElementById('titan-filter-check');
+  const filterTitans = titanFilterCheck ? titanFilterCheck.checked : false;
+
   if (profileId === 'custom') {
     const savedDecks = localStorage.getItem('smashup-custom-decks');
     if (savedDecks) {
       selectedDecks.clear();
-      JSON.parse(savedDecks).forEach(deck => selectedDecks.add(deck));
+      JSON.parse(savedDecks).forEach(deck => {
+        if (!filterTitans || !!titanMap[deck]) {
+          selectedDecks.add(deck);
+        }
+      });
     }
     return;
   }
@@ -938,7 +946,11 @@ function applyProfile(profileId) {
 
   cardData.CardGroups.forEach(group => {
     if (!profile.excludeGroups.includes(group.GroupTitle)) {
-      group.Decks.forEach(deck => selectedDecks.add(deck));
+      group.Decks.forEach(deck => {
+        if (!filterTitans || !!titanMap[deck]) {
+          selectedDecks.add(deck);
+        }
+      });
     }
   });
 }
@@ -1648,30 +1660,41 @@ function updateBalanceModeDropdown(isManualToggle = false) {
     }
   }
 
-  // Pre-validation block
+  // Pre-validation block (Drafting State Machine)
   if (pickBtn && errorContainer) {
+    // Reset defaults first
     pickBtn.disabled = false;
+    pickBtn.className = 'btn-primary';
     pickBtn.innerHTML = `<span>⚡</span> Pick Decks`;
     errorContainer.innerHTML = '';
 
     if (!numPlayers) {
+      // State 1: NO_PLAYERS (Initial Load)
+      pickBtn.disabled = true;
+      pickBtn.className = 'btn-primary btn-disabled-state';
+      pickBtn.innerHTML = `<span>👥</span> Select Player Count`;
       return;
     }
 
     if (activeDecks.length < decksNeeded) {
+      // State 2: INSUFFICIENT_DECKS
+      const diff = decksNeeded - activeDecks.length;
       pickBtn.disabled = true;
-      pickBtn.innerHTML = `<span>⚠️</span> Insufficient Decks`;
+      pickBtn.className = 'btn-primary btn-warning-state';
+      pickBtn.innerHTML = `<span>⚠️</span> Select ${diff} More Deck${diff > 1 ? 's' : ''}`;
       errorContainer.innerHTML = `
         <div class="alert-error">
-          Not enough decks selected! You have selected ${activeDecks.length} decks, but need at least ${decksNeeded} decks for ${numPlayers} players.
+          Not enough decks selected! You have selected <strong>${activeDecks.length}</strong> decks, but need at least <strong>${decksNeeded}</strong> decks for <strong>${numPlayers}</strong> players.
         </div>`;
       return;
     }
 
     const validDraftExists = checkValidDraftExists(activeDecks, activeTiers, numPlayers);
     if (!validDraftExists) {
+      // State 3: INVALID_SYNERGY
       pickBtn.disabled = true;
-      pickBtn.innerHTML = `<span>⚠️</span> Invalid Synergy Settings`;
+      pickBtn.className = 'btn-primary btn-warning-state';
+      pickBtn.innerHTML = `<span>⚠️</span> Adjust Synergy Tiers`;
       
       let tierNames = activeTiers.map(t => {
         const chip = document.querySelector(`.synergy-chip[data-tier="${t}"]`);
@@ -1680,11 +1703,15 @@ function updateBalanceModeDropdown(isManualToggle = false) {
       
       errorContainer.innerHTML = `
         <div class="alert-error">
-          <strong>Draft Generation Blocked:</strong> The selected synergy tiers (${tierNames || 'none selected'}) only have **${allowedPairsCount} compatible pairs** using **${activeUniqueFactions.size} unique decks**. 
-          To support ${numPlayers} players, you need at least **${numPlayers} independent pairs** using **${decksNeeded} unique decks**.
+          <strong>Draft Generation Blocked:</strong> The selected synergy tiers (${tierNames || 'none selected'}) only have <strong>${allowedPairsCount} compatible pairs</strong> using <strong>${activeUniqueFactions.size} unique decks</strong>. 
+          To support ${numPlayers} players, you need at least <strong>${numPlayers} independent pairs</strong> using <strong>${decksNeeded} unique decks</strong>.
           Please select more synergy tiers or enable more expansions.
         </div>`;
+      return;
     }
+
+    // State 4: READY
+    // Button stays enabled with default styling and gradient glow.
   }
 }
 
@@ -1947,6 +1974,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const titanFilterCheck = document.getElementById('titan-filter-check');
   if (titanFilterCheck) {
     titanFilterCheck.addEventListener('change', () => {
+      if (titanFilterCheck.checked) {
+        selectedDecks.forEach(deck => {
+          if (!titanMap[deck]) {
+            selectedDecks.delete(deck);
+          }
+        });
+        handleSelectionChange();
+      }
       renderExpansions();
     });
   }
