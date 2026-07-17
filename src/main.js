@@ -276,8 +276,247 @@ const titanMap = {
   "Ninja": "Invisible Ninja",
   "Sharks": "Helicoprion",
   "Superheroes": "The Everything Glove",
-  "Tornadoes": "Category 5"
 };
+
+const revisedFactions = [
+  "Bear Cavalry", "Elder Things", "Giant Ants", "Miskatonic University", 
+  "Vampires", "Vigilantes", "Tricksters", "Mega Troopers", "Penguins", "Super Spies"
+];
+
+const factionTags = {
+  // Core
+  "Pirates": ["movement"],
+  "Ninja": ["disruption"],
+  "Zombies": ["discardControl"],
+  "Robots": ["extraPlays", "swarm"],
+  "Dinosaurs": ["highPower"],
+  "Wizards": ["extraPlays", "cardDraw"],
+  "Tricksters": ["disruption"],
+  "Aliens": ["disruption"],
+  // Cthulhu
+  "Elder Things": ["disruption"],
+  "Innsmouth": ["swarm"],
+  "Cthulhu Cultists": ["disruption"],
+  "Miskatonic University": ["cardDraw"],
+  // Level 9000
+  "Bear Cavalry": ["movement", "disruption"],
+  "Ghosts": ["handSize"],
+  "Killer Plants": ["deckManipulation"],
+  "Steampunks": ["actions"],
+  // SciFi
+  "Cyborg Apes": ["actions"],
+  "Shape Shifters": ["copying"],
+  "Super Spies": ["deckManipulation"],
+  "Time Travelers": ["versatile"],
+  // Monster Smash
+  "Giant Ants": ["counters"],
+  "Mad Scientists": ["counters"],
+  "Vampires": ["counters", "disruption"],
+  "Werewolves": ["highPower"],
+  // Pretty Pretty
+  "Fairies": ["versatile"],
+  "Kitty Cats": ["control"],
+  "Mythic Horses": ["swarm"],
+  "Princesses": ["highPower"],
+  // Munchkin
+  "Clerics": ["discardControl"],
+  "Dwarves": ["actions"],
+  "Elves": ["sharing"],
+  "Halflings": ["extraPlays", "swarm"],
+  "Mages": ["actions"],
+  "Orcs": ["combat"],
+  "Thieves": ["sharing"],
+  "Warriors": ["combat"],
+  // It's Your Fault
+  "Dragons": ["baseControl"],
+  "Mythic Greeks": ["actions"],
+  "Sharks": ["disruption"],
+  "Superheroes": ["deckManipulation"],
+  "Tornadoes": ["movement"],
+  // Cease & Desist
+  "Star Roamers": ["movement"],
+  "Astro Knights": ["actions"],
+  "Changerbots": ["versatile"],
+  "Ignobles": ["control"],
+  // What Were We Thinking
+  "Teddybears": ["versatile"],
+  "Grandmas": ["deckManipulation"],
+  "Rock Stars": ["swarm"],
+  "Explorers": ["movement"],
+  // Big in Japan
+  "Itty Critters": ["swarm"],
+  "Kaiju": ["actions"],
+  "Magical Girls": ["counters"],
+  "Mega Troopers": ["handSize"],
+  // That '70s
+  "Disco Dancers": ["copying"],
+  "Kung Fu Fighters": ["counters"],
+  "Truckers": ["actions", "movement"],
+  "Vigilantes": ["counters"],
+  // Oops
+  "Ancient Egyptians": ["burying"],
+  "Cowboys": ["combat"],
+  "Samurai": ["counters"],
+  "Vikings": ["deckManipulation"],
+  // World Tour 1
+  "Luchadors": ["disruption"],
+  "Mounties": ["movement"],
+  "Musketeers": ["actions"],
+  "Sumo Wrestlers": ["movement"],
+  // World Tour 2
+  "Anansi Tales": ["sharing"],
+  "Ancient Incas": ["actions"],
+  "Grimms' Fairy Tales": ["disruption"],
+  "Polynesian Voyagers": ["movement"],
+  "Russian Fairy Tales": ["copying"],
+  // Marvel
+  "Avengers": ["swarm"],
+  "Hydra": ["swarm"],
+  "Kree": ["actions"],
+  "Masters of Evil": ["versatile"],
+  "S.H.I.E.L.D.": ["swarm"],
+  "Sinister Six": ["baseControl"],
+  "Spider-Verse": ["movement"],
+  "Ultimates": ["highPower"],
+  // Disney
+  "Aladdin": ["sharing"],
+  "Beauty and the Beast": ["swarm"],
+  "Big Hero 6": ["actions"],
+  "Frozen": ["disruption"],
+  "Mulan": ["counters"],
+  "The Lion King": ["discardControl"],
+  "The Nightmare Before Christmas": ["sharing"],
+  "Wreck-It Ralph": ["baseControl"],
+  // 10th Anniversary
+  "Mermaids": ["movement"],
+  "Skeletons": ["discardControl"],
+  "World Champs": ["versatile"],
+  // Movies
+  "Action Heroes": ["actions"],
+  "Backtimers": ["burying"],
+  "Extramorphs": ["disruption"],
+  "Wraithrustlers": ["control"],
+  // Promos
+  "Geeks": ["disruption"],
+  "All-Stars": ["versatile"],
+  "Goblins": ["versatile"],
+  "Penguins": ["extraPlays", "swarm"],
+  "Knights of the Round Table": ["versatile"],
+  "Teens": ["versatile"],
+  "Sheep": ["movement"],
+  "Slashers": ["disruption"],
+  "Clowns": ["disruption"],
+  // Half the Battle
+  "Adolescent Epic Geckos": ["movement"],
+  "G.I. Gerald": ["versatile"],
+  "Pearl and the Images": ["swarm"],
+  "Rulers of the Cosmos": ["versatile"]
+};
+
+function evaluateSynergy(factionA, factionB) {
+  if (!factionA || !factionB) return null;
+  
+  const pair = [factionA, factionB].sort();
+  const key = pair.join(' / ');
+  
+  const overrides = {
+    "Robots / Zombies": {
+      tier: "s",
+      ratingName: "God-Tier Combo",
+      text: "Zombies can retrieve minions from the discard pile, allowing the Robots swarm to play extra low-power minions repeatedly. This combination is a classic powerhouse."
+    },
+    "Killer Plants / Zombies": {
+      tier: "s",
+      ratingName: "God-Tier Combo",
+      text: "Killer Plants search your deck to pull out key minions, while Zombies retrieve them from the grave once they score or are destroyed. This creates an unbreakable, highly consistent minion engine."
+    },
+    "Ghosts / Wizards": {
+      tier: "anti",
+      ratingName: "Anti-Synergy",
+      text: "Ghosts require keeping a very small (or empty) hand size to trigger their power spikes, whereas Wizards cycle cards rapidly and force you to draw extra cards, making it very difficult to empty your hand."
+    },
+    "Geeks / Ghosts": {
+      tier: "anti",
+      ratingName: "Anti-Synergy",
+      text: "Geeks focus on holding a hand full of disruptive, reactive action cards to counter opponents, which directly conflicts with the Ghosts mechanic of emptying your hand."
+    }
+  };
+  
+  if (overrides[key]) {
+    return overrides[key];
+  }
+  
+  const tagsA = factionTags[factionA] || [];
+  const tagsB = factionTags[factionB] || [];
+  
+  let score = 0;
+  let reasons = [];
+  
+  const extraPlaysA = tagsA.includes("extraPlays");
+  const extraPlaysB = tagsB.includes("extraPlays");
+  const countersA = tagsA.includes("counters");
+  const countersB = tagsB.includes("counters");
+  const swarmA = tagsA.includes("swarm");
+  const swarmB = tagsB.includes("swarm");
+  const discardControlA = tagsA.includes("discardControl");
+  const discardControlB = tagsB.includes("discardControl");
+  const movementA = tagsA.includes("movement");
+  const movementB = tagsB.includes("movement");
+  const actionsA = tagsA.includes("actions");
+  const actionsB = tagsB.includes("actions");
+  
+  if ((extraPlaysA && countersB) || (extraPlaysB && countersA)) {
+    score += 3;
+    reasons.push("Attacking with extra minion plays allows placing and distributing power counters rapidly.");
+  }
+  
+  if ((discardControlA && (swarmB || extraPlaysB)) || (discardControlB && (swarmA || extraPlaysA))) {
+    score += 3;
+    reasons.push("Discard pile retrieval feeds the swarm/extra plays engine, allowing you to replay minions repeatedly.");
+  }
+  
+  if (countersA && countersB) {
+    score += 2;
+    reasons.push("Both factions focus on +1 power counters, letting you stack massive minion threats.");
+  }
+  
+  if (movementA && movementB) {
+    score += 2;
+    reasons.push("High mobility from both factions allows shifting minion presence to steal bases right before they score.");
+  }
+  
+  if (actionsA && actionsB) {
+    score += 1;
+    reasons.push("Both factions rely heavily on action card attachments and combos.");
+  }
+  
+  if (tagsA.includes("versatile") || tagsB.includes("versatile")) {
+    score += 1;
+  }
+  
+  let tier = "b";
+  let ratingName = "Good / Stable";
+  
+  if (score >= 4) {
+    tier = "a";
+    ratingName = "Strong Synergy";
+  } else if (score >= 2) {
+    tier = "b";
+    ratingName = "Good / Stable";
+  } else {
+    tier = "c";
+    ratingName = "Standard / Fair";
+  }
+  
+  let text = "";
+  if (reasons.length > 0) {
+    text = reasons.join(" ");
+  } else {
+    text = `This combination is standard and workable. Both factions can work together without conflicting mechanics, though they don't have direct special mechanical synergies.`;
+  }
+  
+  return { tier, ratingName, text };
+}
 
 function getDeckIconHtml(deckName, locationClass = "deck-icon-img", enableClick = true) {
   const norm = deckName.trim();
@@ -542,12 +781,14 @@ function openExpansionModal(group) {
     item.className = 'modal-deck-desc-item';
     
     const iconHtml = getDeckIconHtml(deck, "deck-icon-img", false);
+    const isRevised = revisedFactions.includes(deck);
+    const badgeHtml = isRevised ? '<span class="revamped-badge">✨ Revamped</span>' : '';
     const desc = deckDescriptions[deck] || "No description available for this faction.";
     
     item.innerHTML = `
       <div class="modal-deck-desc-header">
         <span class="modal-deck-emoji">${iconHtml}</span>
-        <span class="modal-deck-name">${deck}</span>
+        <span class="modal-deck-name">${deck}${badgeHtml}</span>
       </div>
       <div class="modal-deck-desc-body">${desc}</div>
     `;
@@ -747,6 +988,13 @@ function renderExpansions() {
       textSpan.className = 'deck-text';
       textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
       
+      if (revisedFactions.includes(deck)) {
+        const badge = document.createElement('span');
+        badge.className = 'revamped-badge';
+        badge.innerHTML = '✨ Revamped';
+        textSpan.appendChild(badge);
+      }
+      
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
 
@@ -906,6 +1154,13 @@ function renderExpansions() {
       const textSpan = document.createElement('span');
       textSpan.className = 'deck-text';
       textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
+      
+      if (revisedFactions.includes(deck)) {
+        const badge = document.createElement('span');
+        badge.className = 'revamped-badge';
+        badge.innerHTML = '✨ Revamped';
+        textSpan.appendChild(badge);
+      }
       
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
@@ -1076,7 +1331,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck1, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}</span>
+            <span class="deck-title">${assignment.deck1}${titanMap[assignment.deck1] ? ' / ' + titanMap[assignment.deck1] : ''}${revisedFactions.includes(assignment.deck1) ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
           </div>
         </div>
@@ -1088,7 +1343,7 @@ function distributeDecks() {
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
-            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}</span>
+            <span class="deck-title">${assignment.deck2}${titanMap[assignment.deck2] ? ' / ' + titanMap[assignment.deck2] : ''}${revisedFactions.includes(assignment.deck2) ? ' <span class="revamped-badge">✨ Revamped</span>' : ''}</span>
             <span class="deck-source">${getDeckSourceInfo(assignment.deck2)}</span>
           </div>
         </div>
@@ -1100,6 +1355,95 @@ function distributeDecks() {
 
   // Smooth scroll to results
   playersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function populateSynergyDropdowns() {
+  const selectA = document.getElementById('faction-a-select');
+  const selectB = document.getElementById('faction-b-select');
+  if (!selectA || !selectB || !cardData || !cardData.CardGroups) return;
+
+  let allDecks = [];
+  cardData.CardGroups.forEach(group => {
+    group.Decks.forEach(deck => {
+      allDecks.push(deck);
+    });
+  });
+  allDecks.sort();
+
+  // Only repopulate if it has not been populated yet
+  if (selectA.children.length > 1) return;
+
+  allDecks.forEach(deck => {
+    const isRevised = revisedFactions.includes(deck);
+    const label = deck + (isRevised ? ' (✨ Revised)' : '');
+    
+    const optA = document.createElement('option');
+    optA.value = deck;
+    optA.textContent = label;
+    selectA.appendChild(optA);
+
+    const optB = document.createElement('option');
+    optB.value = deck;
+    optB.textContent = label;
+    selectB.appendChild(optB);
+  });
+}
+
+function updateSynergyAnalysis() {
+  const selectA = document.getElementById('faction-a-select');
+  const selectB = document.getElementById('faction-b-select');
+  const cardContainer = document.getElementById('synergy-result-card');
+  if (!selectA || !selectB || !cardContainer) return;
+
+  const valA = selectA.value;
+  const valB = selectB.value;
+
+  if (!valA || !valB) return;
+
+  if (valA === valB) {
+    cardContainer.innerHTML = `
+      <div class="synergy-placeholder">
+        <div class="placeholder-icon">⚠️</div>
+        <h3>Select Different Factions</h3>
+        <p>Please select two different factions to analyze their synergy. You cannot pair a faction with itself.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const result = evaluateSynergy(valA, valB);
+  if (!result) return;
+
+  const isRevisedA = revisedFactions.includes(valA);
+  const isRevisedB = revisedFactions.includes(valB);
+
+  let revisedHtml = '';
+  if (isRevisedA || isRevisedB) {
+    const revisedList = [];
+    if (isRevisedA) revisedList.push(`<strong>${valA}</strong>`);
+    if (isRevisedB) revisedList.push(`<strong>${valB}</strong>`);
+    
+    revisedHtml = `
+      <div class="synergy-revised-section">
+        <div class="synergy-revised-title">✨ Revised Faction Alert</div>
+        <div class="synergy-revised-desc">
+          This pairing includes the revised/revamped balance printings for ${revisedList.join(' and ')}. 
+          AEG redesigned these factions to refine their mechanics, making them far more interactive and viable compared to their original printings.
+        </div>
+      </div>
+    `;
+  }
+
+  cardContainer.innerHTML = `
+    <div class="synergy-header">
+      <div class="synergy-pair-names">${valA} + ${valB}</div>
+      <span class="synergy-tier-badge tier-${result.tier}">${result.ratingName}</span>
+    </div>
+    <div class="synergy-body">
+      ${result.text}
+    </div>
+    ${revisedHtml}
+  `;
 }
 
 // Bind interactive events
@@ -1125,5 +1469,45 @@ document.addEventListener('DOMContentLoaded', () => {
     titanFilterCheck.addEventListener('change', () => {
       renderExpansions();
     });
+  }
+
+  // View switcher tabs
+  const tabSelector = document.getElementById('tab-selector');
+  const tabTester = document.getElementById('tab-tester');
+  const selectorSidebar = document.getElementById('selector-sidebar');
+  const selectorContent = document.getElementById('selector-content');
+  const testerSidebar = document.getElementById('tester-sidebar');
+  const testerContent = document.getElementById('tester-content');
+
+  if (tabSelector && tabTester && selectorSidebar && selectorContent && testerSidebar && testerContent) {
+    tabSelector.addEventListener('click', () => {
+      tabSelector.classList.add('active');
+      tabTester.classList.remove('active');
+      
+      selectorSidebar.classList.remove('hidden');
+      selectorContent.classList.remove('hidden');
+      testerSidebar.classList.add('hidden');
+      testerContent.classList.add('hidden');
+    });
+
+    tabTester.addEventListener('click', () => {
+      tabTester.classList.add('active');
+      tabSelector.classList.remove('active');
+      
+      selectorSidebar.classList.add('hidden');
+      selectorContent.classList.add('hidden');
+      testerSidebar.classList.remove('hidden');
+      testerContent.classList.remove('hidden');
+      
+      populateSynergyDropdowns();
+    });
+  }
+
+  // Synergy Tester dropdown change events
+  const selectA = document.getElementById('faction-a-select');
+  const selectB = document.getElementById('faction-b-select');
+  if (selectA && selectB) {
+    selectA.addEventListener('change', updateSynergyAnalysis);
+    selectB.addEventListener('change', updateSynergyAnalysis);
   }
 });

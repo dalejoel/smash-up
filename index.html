@@ -24,13 +24,17 @@
         <div class="logo-icon">⚔️</div>
         <h1>Smash Up Deck Selector</h1>
       </div>
+      <nav class="header-nav">
+        <button id="tab-selector" class="nav-tab active">Selector</button>
+        <button id="tab-tester" class="nav-tab">Synergy Tester</button>
+      </nav>
     </header>
 
     <!-- Main Container -->
     <main class="container">
       
       <!-- Control Panel (Left Sidebar on desktop) -->
-      <section class="control-panel">
+      <section class="control-panel" id="selector-sidebar">
         <div>
           <h2 class="section-title">Draft Settings</h2>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
@@ -76,7 +80,7 @@
       </section>
 
       <!-- Right Content Area -->
-      <div class="main-content">
+      <div class="main-content" id="selector-content">
         <!-- Decks Checklist Panel (Main content area) -->
         <section class="decks-panel">
           <div class="decks-header">
@@ -96,6 +100,55 @@
           <h2 class="section-title">Distributed Player Decks</h2>
           <div id="results-container" class="players-grid">
             <!-- Dynamically populated cards -->
+          </div>
+        </section>
+      </div>
+
+      <!-- Synergy Tester Left Panel -->
+      <section class="control-panel hidden" id="tester-sidebar">
+        <div>
+          <h2 class="section-title">Synergy Tester</h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            Select two factions to evaluate their gameplay compatibility and synergy strength.
+          </p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Faction A</label>
+          <div class="select-wrapper">
+            <select id="faction-a-select">
+              <option value="" disabled selected>Select Faction A...</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 1rem 0; font-size: 1.5rem; color: var(--text-muted);">
+          ⚡
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Faction B</label>
+          <div class="select-wrapper">
+            <select id="faction-b-select">
+              <option value="" disabled selected>Select Faction B...</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Synergy Tester Right Panel (Results) -->
+      <div class="main-content hidden" id="tester-content">
+        <section class="decks-panel">
+          <div class="decks-header">
+            <h2 class="section-title">Synergy Analysis</h2>
+          </div>
+          
+          <div id="synergy-result-card" class="synergy-card">
+            <div class="synergy-placeholder">
+              <div class="placeholder-icon">⚔️</div>
+              <h3>Select Factions to Analyze</h3>
+              <p>Choose two factions from the sidebar to test their combination potential.</p>
+            </div>
           </div>
         </section>
       </div>
