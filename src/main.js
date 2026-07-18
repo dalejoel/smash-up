@@ -915,6 +915,72 @@ function openExpansionModal(group) {
   document.body.appendChild(overlay);
 }
 
+function openSynergyModal(deck1, deck2, synergy, isRev1, isRev2) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  
+  const content = document.createElement('div');
+  content.className = 'modal-content-box synergy-modal-content';
+  content.style.maxWidth = '550px';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'modal-close-btn';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.addEventListener('click', () => overlay.remove());
+  content.appendChild(closeBtn);
+
+  const title = document.createElement('h3');
+  title.className = 'modal-title synergy-modal-title';
+  title.style.marginBottom = '1rem';
+  
+  const name1 = deck1 + (isRev1 ? ' (Revamped)' : '');
+  const name2 = deck2 + (isRev2 ? ' (Revamped)' : '');
+  title.innerHTML = `${name1} &amp; ${name2}`;
+  content.appendChild(title);
+
+  const badgeWrapper = document.createElement('div');
+  badgeWrapper.style.marginBottom = '1.5rem';
+  badgeWrapper.innerHTML = `<span class="synergy-tier-badge tier-${synergy.tier}" style="font-size: 0.9rem; padding: 0.35rem 0.85rem; cursor: default;">${synergy.ratingName}</span>`;
+  content.appendChild(badgeWrapper);
+
+  const desc = document.createElement('div');
+  desc.className = 'synergy-modal-desc';
+  desc.style.fontSize = '1.1rem';
+  desc.style.lineHeight = '1.7';
+  desc.style.color = '#e2e8f0';
+  desc.innerHTML = synergy.text;
+  content.appendChild(desc);
+
+  if (isRev1 || isRev2) {
+    const revisedList = [];
+    if (isRev1) revisedList.push(`<strong>${deck1} (Revamped)</strong>`);
+    if (isRev2) revisedList.push(`<strong>${deck2} (Revamped)</strong>`);
+    
+    const revisedAlert = document.createElement('div');
+    revisedAlert.className = 'synergy-revised-section';
+    revisedAlert.style.marginTop = '1.5rem';
+    revisedAlert.innerHTML = `
+      <div class="synergy-revised-title" style="font-weight: 700; color: #fbbf24; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>✨</span> Revised Faction Alert
+      </div>
+      <div class="synergy-revised-desc" style="font-size: 0.9rem; color: #94a3b8; line-height: 1.5;">
+        This pairing includes the revised/revamped balance printings for ${revisedList.join(' and ')}. 
+        AEG redesigned these factions to refine their mechanics, making them far more interactive and viable.
+      </div>
+    `;
+    content.appendChild(revisedAlert);
+  }
+
+  overlay.appendChild(content);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+  
+  document.body.appendChild(overlay);
+}
+
 const profiles = {
   "joel-dale": {
     name: "Joel Dale",
@@ -1034,7 +1100,7 @@ function renderExpansions() {
     if (visibleDecks.length === 0) return; // Skip rendering this card
 
     const card = document.createElement('div');
-    card.className = 'expansion-card';
+    card.className = 'expansion-card collapsed-mobile';
 
     // Cover image
     if (group.Image) {
@@ -1061,15 +1127,40 @@ function renderExpansions() {
     checkbox.type = 'checkbox';
     checkbox.id = `expansion-check-${index}`;
 
-    const label = document.createElement('label');
-    label.setAttribute('for', checkbox.id);
+    const label = document.createElement('span');
     label.className = 'expansion-title';
     label.textContent = group.GroupTitle;
     label.style.cursor = 'pointer';
 
+    const countBadge = document.createElement('span');
+    countBadge.className = 'selection-count-badge';
+    countBadge.style.fontSize = '0.8rem';
+    countBadge.style.color = 'var(--text-secondary)';
+    countBadge.style.marginLeft = '0.5rem';
+    countBadge.style.fontWeight = '600';
+    
+    const updateCountBadge = () => {
+      const selectedCount = visibleDecks.filter(d => selectedDecks.has(d)).length;
+      countBadge.textContent = ` (${selectedCount}/${visibleDecks.length} Selected)`;
+    };
+    updateCountBadge();
+
+    const toggleArrow = document.createElement('span');
+    toggleArrow.className = 'expansion-toggle-arrow';
+    toggleArrow.textContent = '▼';
+
     titleBar.appendChild(checkbox);
     titleBar.appendChild(label);
+    titleBar.appendChild(countBadge);
+    titleBar.appendChild(toggleArrow);
     card.appendChild(titleBar);
+
+    // Toggle collapse state on mobile when clicking header (excluding checkbox)
+    titleBar.style.cursor = 'pointer';
+    titleBar.addEventListener('click', (e) => {
+      if (e.target === checkbox) return;
+      card.classList.toggle('collapsed-mobile');
+    });
 
     // Check if all decks in group are selected
     const allDecksSelected = visibleDecks.every(deck => selectedDecks.has(deck));
@@ -1142,6 +1233,7 @@ function renderExpansions() {
         checkbox.checked = updatedAllSelected;
         checkbox.indeterminate = !updatedAllSelected && updatedAnySelected;
         
+        updateCountBadge();
         handleSelectionChange();
       });
     });
@@ -1175,6 +1267,7 @@ function renderExpansions() {
         card.classList.remove('selected-card');
       }
 
+      updateCountBadge();
       handleSelectionChange();
     });
   });
@@ -1187,7 +1280,7 @@ function renderExpansions() {
 
   if (visibleSoloGroups.length > 0) {
     const card = document.createElement('div');
-    card.className = 'expansion-card promo-card';
+    card.className = 'expansion-card promo-card collapsed-mobile';
 
     // Mini collage of promo images
     const imgWrapper = document.createElement('div');
@@ -1228,15 +1321,40 @@ function renderExpansions() {
     checkbox.type = 'checkbox';
     checkbox.id = 'expansion-check-promos';
 
-    const label = document.createElement('label');
-    label.setAttribute('for', checkbox.id);
+    const label = document.createElement('span');
     label.className = 'expansion-title';
     label.textContent = "Promos & Solo Decks";
     label.style.cursor = 'pointer';
 
+    const countBadge = document.createElement('span');
+    countBadge.className = 'selection-count-badge';
+    countBadge.style.fontSize = '0.8rem';
+    countBadge.style.color = 'var(--text-secondary)';
+    countBadge.style.marginLeft = '0.5rem';
+    countBadge.style.fontWeight = '600';
+    
+    const updateCountBadge = () => {
+      const selectedCount = allPromoDecks.filter(d => selectedDecks.has(d)).length;
+      countBadge.textContent = ` (${selectedCount}/${allPromoDecks.length} Selected)`;
+    };
+    updateCountBadge();
+
+    const toggleArrow = document.createElement('span');
+    toggleArrow.className = 'expansion-toggle-arrow';
+    toggleArrow.textContent = '▼';
+
     titleBar.appendChild(checkbox);
     titleBar.appendChild(label);
+    titleBar.appendChild(countBadge);
+    titleBar.appendChild(toggleArrow);
     card.appendChild(titleBar);
+
+    // Toggle collapse state on mobile when clicking header (excluding checkbox)
+    titleBar.style.cursor = 'pointer';
+    titleBar.addEventListener('click', (e) => {
+      if (e.target === checkbox) return;
+      card.classList.toggle('collapsed-mobile');
+    });
 
     // List of promo decks
     const list = document.createElement('div');
@@ -1306,6 +1424,7 @@ function renderExpansions() {
         checkbox.checked = updatedAllSelected;
         checkbox.indeterminate = !updatedAllSelected && updatedAnySelected;
         
+        updateCountBadge();
         handleSelectionChange();
       });
     });
@@ -1338,7 +1457,8 @@ function renderExpansions() {
       } else {
         card.classList.remove('selected-card');
       }
-      
+
+      updateCountBadge();
       handleSelectionChange();
     });
   }
@@ -1817,11 +1937,6 @@ function distributeDecks() {
             <span class="deck-source">${getDeckSourceInfo(assignment.deck1)}</span>
           </div>
         </div>
-        <div class="deck-connector">
-          <span class="connector-line"></span>
-          <span class="connector-badge">⚡</span>
-          <span class="connector-line"></span>
-        </div>
         <div class="deck-row">
           <div class="deck-emoji-circle">${getDeckIconHtml(assignment.deck2, "deck-icon-img-circle")}</div>
           <div class="deck-details">
@@ -1831,6 +1946,14 @@ function distributeDecks() {
         </div>
       </div>
     `;
+
+    // Click event listener to the '.synergy-tier-badge' on the player results cards
+    const badgeElement = card.querySelector('.synergy-tier-badge');
+    if (badgeElement) {
+      badgeElement.addEventListener('click', () => {
+        openSynergyModal(assignment.deck1, assignment.deck2, synergy, isRev1, isRev2);
+      });
+    }
 
     resultsContainer.appendChild(card);
   });
