@@ -1,3 +1,5 @@
+import { synergiesOverrides } from './synergies_overrides.js';
+
 // Smash Up Card Selector Logic
 
 // Unregister legacy service workers to bypass old Polymer caches
@@ -440,31 +442,61 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
   const pair = [factionA, factionB].sort();
   const key = pair.join(' / ');
   
-  const overrides = {
-    "Robots / Zombies": {
-      tier: "s",
-      ratingName: "God-Tier Combo",
-      text: "Zombies can retrieve minions from the discard pile, allowing the Robots swarm to play extra low-power minions repeatedly. This combination is a classic powerhouse."
-    },
-    "Killer Plants / Zombies": {
-      tier: "s",
-      ratingName: "God-Tier Combo",
-      text: "Killer Plants search your deck to pull out key minions, while Zombies retrieve them from the grave once they score or are destroyed. This creates an unbreakable, highly consistent minion engine."
-    },
-    "Ghosts / Wizards": {
-      tier: "anti",
-      ratingName: "Anti-Synergy",
-      text: "Ghosts require keeping a very small (or empty) hand size to trigger their power spikes, whereas Wizards cycle cards rapidly and force you to draw extra cards, making it very difficult to empty your hand."
-    },
-    "Geeks / Ghosts": {
-      tier: "anti",
-      ratingName: "Anti-Synergy",
-      text: "Geeks focus on holding a hand full of disruptive, reactive action cards to counter opponents, which directly conflicts with the Ghosts mechanic of emptying your hand."
+  // Dynamic overrides check (specifically for revamped Vampires pairings)
+  const hasVampires = pair.includes("Vampires");
+  if (hasVampires) {
+    const isVampA = factionA === "Vampires" ? isRevampedA : isRevampedB;
+    const otherFaction = factionA === "Vampires" ? factionB : factionA;
+    const isOtherRev = factionA === "Vampires" ? isRevampedB : isRevampedA;
+    
+    if (otherFaction === "Kung Fu Fighters") {
+      return {
+        tier: isVampA ? "a" : "b",
+        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        text: isVampA
+          ? "Vampires (Revamped) generate power counters rapidly, which Kung Fu Fighters can transfer and shift fluidly to create massive threats or break bases."
+          : "Vampires generate power counters that Kung Fu Fighters can shift around, though normal Vampires' slower pace makes it less explosive."
+      };
     }
-  };
-  
-  if (overrides[key]) {
-    return overrides[key];
+    if (otherFaction === "Giant Ants") {
+      const bothRev = isVampA && isOtherRev;
+      return {
+        tier: bothRev ? "s" : (isVampA ? "a" : "b"),
+        ratingName: bothRev ? "God-Tier Combo" : (isVampA ? "Strong Synergy" : "Good / Stable"),
+        text: bothRev
+          ? "God-tier counter-based pairing. Vampires (Revamped) generate counters at high speed to feed the Giant Ants' Titan and abilities, while lowering enemy minion power to make them easy prey."
+          : "Both factions center around +1 power counters. Vampires feed the Ants' hunger for counters to trigger their abilities, while Vampires reduce enemy minion power."
+      };
+    }
+    if (otherFaction === "Mad Scientists") {
+      return {
+        tier: isVampA ? "a" : "b",
+        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        text: "Mad Scientists place and benefit from power counters, and their strong card draw engine (like Lab Assistant) perfectly compensates for the Vampires' low card draw."
+      };
+    }
+    if (otherFaction === "Zombies") {
+      return {
+        tier: isVampA ? "a" : "b",
+        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        text: isVampA
+          ? "Vampires (Revamped) has 'Crack of Dusk' to replay power 3 or less minions from the grave, which pairs perfectly with Zombies' recursion to cycle powerful utility minions indefinitely."
+          : "Zombies retrieve minions from the discard pile, helping normal Vampires maintain board presence, though they don't share mechanical counter synergies."
+      };
+    }
+    if (otherFaction === "Sharks") {
+      return {
+        tier: isVampA ? "a" : "b",
+        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        text: isVampA
+          ? "Vampires (Revamped) can lower the power of enemy minions, putting them directly into the execution range of the Sharks' destruction cards to trigger their swarming and power-boosting abilities."
+          : "Vampires and Sharks both rely on minion destruction, but normal Vampires compete with Sharks for the killing blows, making the setup a bit clunky."
+      };
+    }
+  }
+
+  if (synergiesOverrides[key]) {
+    return synergiesOverrides[key];
   }
   
   const tagsA = factionTags[factionA] || [];
@@ -485,6 +517,22 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
   const movementB = tagsB.includes("movement");
   const actionsA = tagsA.includes("actions");
   const actionsB = tagsB.includes("actions");
+  const cardDrawA = tagsA.includes("cardDraw");
+  const cardDrawB = tagsB.includes("cardDraw");
+  const highPowerA = tagsA.includes("highPower");
+  const highPowerB = tagsB.includes("highPower");
+  const disruptionA = tagsA.includes("disruption");
+  const disruptionB = tagsB.includes("disruption");
+  const deckManipulationA = tagsA.includes("deckManipulation");
+  const deckManipulationB = tagsB.includes("deckManipulation");
+  const controlA = tagsA.includes("control");
+  const controlB = tagsB.includes("control");
+  const handSizeA = tagsA.includes("handSize");
+  const handSizeB = tagsB.includes("handSize");
+  const buryingA = tagsA.includes("burying");
+  const buryingB = tagsB.includes("burying");
+  const sharingA = tagsA.includes("sharing");
+  const sharingB = tagsB.includes("sharing");
   
   if ((extraPlaysA && countersB) || (extraPlaysB && countersA)) {
     score += 3;
@@ -509,6 +557,76 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
   if (actionsA && actionsB) {
     score += 1;
     reasons.push("Both factions rely heavily on action card attachments and combos.");
+  }
+
+  if ((actionsA && discardControlB) || (actionsB && discardControlA)) {
+    score += 3;
+    reasons.push("Action-heavy upgrade decks pair brilliantly with discard pile recursion to retrieve and replay powerful attachment upgrades.");
+  }
+
+  if ((actionsA && extraPlaysB) || (actionsB && extraPlaysA)) {
+    score += 3;
+    reasons.push("Extra plays allow you to chain actions and attach multiple upgrade cards to your minions in a single turn.");
+  }
+
+  if ((actionsA && cardDrawB) || (actionsB && cardDrawA)) {
+    score += 2;
+    reasons.push("High card draw keeps your hand constantly fueled with action card attachments and minion upgrades.");
+  }
+
+  if ((swarmA && extraPlaysB) || (swarmB && extraPlaysA)) {
+    score += 3;
+    reasons.push("Swarm factions pair perfectly with extra card plays to deploy multiple minions rapidly and break bases in a single turn.");
+  }
+
+  if ((countersA && movementB) || (countersB && movementA)) {
+    score += 3;
+    reasons.push("Power counter factions gain massive flexibility when paired with movement, letting you transfer and shift your buffed minions to break bases dynamically.");
+  }
+
+  if ((movementA && disruptionB) || (movementB && disruptionA)) {
+    score += 3;
+    reasons.push("Moving enemy minions into base-destruction zones or execution range creates powerful board control.");
+  }
+
+  if ((highPowerA && extraPlaysB) || (highPowerB && extraPlaysA)) {
+    score += 3;
+    reasons.push("High-power minions need extra card plays or action acceleration to deploy multiple threats before opponents can react.");
+  }
+
+  if ((highPowerA && cardDrawB) || (highPowerB && cardDrawA)) {
+    score += 2;
+    reasons.push("Card draw keeps your hand stocked with high-power minions to drop consistently.");
+  }
+
+  if ((deckManipulationA && discardControlB) || (deckManipulationB && discardControlA)) {
+    score += 3;
+    reasons.push("Deck search and manipulation paired with discard pile retrieval creates a highly consistent and predictable minion cycle.");
+  }
+
+  if ((controlA && disruptionB) || (controlB && disruptionA)) {
+    score += 3;
+    reasons.push("Controlling opposing minions and placing them in range of disruption and destruction triggers massive power boosts.");
+  }
+
+  if (disruptionA && disruptionB) {
+    score += 2;
+    reasons.push("Double disruption allows you to control the board, clobbering base progress and denying opponents their combos.");
+  }
+
+  if ((handSizeA && discardControlB) || (handSizeB && discardControlA)) {
+    score += 2;
+    reasons.push("Hand-size management benefits from discard pile recursion to retrieve and play cards you were forced to discard.");
+  }
+
+  if ((buryingA && extraPlaysB) || (buryingB && extraPlaysA)) {
+    score += 2;
+    reasons.push("Burying cards requires extra card plays to bury and unearth cards efficiently without losing tempo.");
+  }
+
+  if ((sharingA && (extraPlaysB || cardDrawB)) || (sharingB && (extraPlaysA || cardDrawA))) {
+    score += 2;
+    reasons.push("Sharing mechanics are boosted by card draw and extra plays, allowing you to feed cards to partners while maintaining hand advantage.");
   }
   
   if (tagsA.includes("versatile") || tagsB.includes("versatile")) {
