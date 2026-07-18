@@ -840,6 +840,25 @@ function openExpansionModal(group) {
   const content = document.createElement('div');
   content.className = 'modal-content-box';
   
+  if (group.Decks.length === 1) {
+    renderFactionModalContent(content, overlay, group.Decks[0], group, false);
+  } else {
+    renderExpansionModalContent(content, overlay, group);
+  }
+  
+  overlay.appendChild(content);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+  
+  document.body.appendChild(overlay);
+}
+
+function renderExpansionModalContent(content, overlay, group) {
+  content.innerHTML = '';
+  
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close-btn';
   closeBtn.innerHTML = '&times;';
@@ -885,6 +904,7 @@ function openExpansionModal(group) {
   group.Decks.forEach(deck => {
     const item = document.createElement('div');
     item.className = 'modal-deck-desc-item';
+    item.title = `Click to view ${deck} detail page & top synergies`;
     
     const iconHtml = getDeckIconHtml(deck, "deck-icon-img", false);
     const isRevised = revisedFactions.includes(deck);
@@ -898,21 +918,187 @@ function openExpansionModal(group) {
       </div>
       <div class="modal-deck-desc-body">${desc}</div>
     `;
+    item.addEventListener('click', () => {
+      renderFactionModalContent(content, overlay, deck, group, true);
+    });
     list.appendChild(item);
   });
   
   detailsCol.appendChild(list);
   modalLayout.appendChild(detailsCol);
   content.appendChild(modalLayout);
-  overlay.appendChild(content);
+}
+
+function renderFactionModalContent(content, overlay, deck, group, showBackButton = true) {
+  content.innerHTML = '';
   
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.remove();
-    }
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'modal-close-btn';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.addEventListener('click', () => overlay.remove());
+  content.appendChild(closeBtn);
+  
+  // Layout container
+  const gridLayout = document.createElement('div');
+  gridLayout.className = 'faction-details-grid-layout';
+  
+  // Top Section (Wraps Left and Right Columns)
+  const topSection = document.createElement('div');
+  topSection.className = 'faction-top-section';
+  
+  // Left Column (Faction Cover Image)
+  const leftCol = document.createElement('div');
+  leftCol.className = 'faction-left-col';
+  
+  const imageArea = document.createElement('div');
+  imageArea.className = 'faction-image-area modal-img-col';
+  
+  const deckCover = customDeckIcons[deck];
+  if (deckCover) {
+    const img = document.createElement('img');
+    img.src = resolveImagePath(deckCover);
+    img.alt = `${deck} Cover Art`;
+    img.className = 'modal-cover-img';
+    img.referrerPolicy = 'no-referrer';
+    imageArea.appendChild(img);
+  } else if (group.Image) {
+    const img = document.createElement('img');
+    img.src = resolveImagePath(group.Image);
+    img.alt = `${deck} Box Art`;
+    img.className = 'modal-cover-img';
+    img.referrerPolicy = 'no-referrer';
+    imageArea.appendChild(img);
+  } else {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'modal-promo-placeholder';
+    placeholder.innerHTML = '🎁';
+    imageArea.appendChild(placeholder);
+  }
+  leftCol.appendChild(imageArea);
+  topSection.appendChild(leftCol);
+  
+  // Right Column (Back Button, Title, Set, Playstyle Tags, Titan, Faction Overview)
+  const rightCol = document.createElement('div');
+  rightCol.className = 'faction-right-col';
+  
+  // Back button (moves to the top of the right column)
+  if (showBackButton) {
+    const backBtnContainer = document.createElement('div');
+    backBtnContainer.className = 'faction-back-area';
+    
+    const backBtn = document.createElement('button');
+    backBtn.className = 'modal-back-btn';
+    backBtn.innerHTML = `← Back to ${group.GroupTitle}`;
+    backBtn.addEventListener('click', () => {
+      renderExpansionModalContent(content, overlay, group);
+    });
+    backBtnContainer.appendChild(backBtn);
+    rightCol.appendChild(backBtnContainer);
+  }
+  
+  // Faction Header
+  const headerArea = document.createElement('div');
+  headerArea.className = 'faction-header-area';
+  
+  const isRevised = revisedFactions.includes(deck);
+  const badgeHtml = isRevised ? '<span class="revamped-badge">✨ Revamped</span>' : '';
+  
+  headerArea.innerHTML = `
+    <h3 class="modal-title" style="margin: 0; display: inline-flex; align-items: center;">${deck}${badgeHtml}</h3>
+    <p class="faction-set-name" style="margin: 0.25rem 0 0 0;">${group.GroupTitle}</p>
+  `;
+  rightCol.appendChild(headerArea);
+  
+  // Meta Tags & Titan
+  const metaArea = document.createElement('div');
+  metaArea.className = 'faction-meta-area faction-meta-row';
+  
+  const tags = factionTags[deck] || [];
+  tags.forEach(tag => {
+    const tagBadge = document.createElement('span');
+    tagBadge.className = 'faction-tag-badge';
+    tagBadge.textContent = tag;
+    metaArea.appendChild(tagBadge);
   });
   
-  document.body.appendChild(overlay);
+  const titan = titanMap[deck];
+  if (titan) {
+    const titanBadge = document.createElement('span');
+    titanBadge.className = 'faction-titan-info';
+    titanBadge.innerHTML = `🪐 Titan: <strong>${titan}</strong>`;
+    metaArea.appendChild(titanBadge);
+  }
+  rightCol.appendChild(metaArea);
+  
+  // Faction Overview
+  const overviewArea = document.createElement('div');
+  overviewArea.className = 'faction-overview-area';
+  
+  const descTitle = document.createElement('h4');
+  descTitle.className = 'faction-section-subheading';
+  descTitle.textContent = "Faction Overview";
+  overviewArea.appendChild(descTitle);
+  
+  const desc = document.createElement('p');
+  desc.className = 'faction-description-text';
+  desc.textContent = deckDescriptions[deck] || "No description available for this faction.";
+  overviewArea.appendChild(desc);
+  rightCol.appendChild(overviewArea);
+  
+  topSection.appendChild(rightCol);
+  gridLayout.appendChild(topSection);
+  
+  // Bottom Section (Full Width Top Synergies Matches Section)
+  const synergiesArea = document.createElement('div');
+  synergiesArea.className = 'faction-synergies-area faction-synergies-section';
+  
+  const synergiesTitle = document.createElement('h4');
+  synergiesTitle.className = 'faction-section-subheading';
+  synergiesTitle.textContent = "Top Synergy Matches";
+  synergiesArea.appendChild(synergiesTitle);
+  
+  const synergiesList = document.createElement('div');
+  synergiesList.className = 'faction-synergies-list';
+  
+  const allDecks = cardData.CardGroups.flatMap(g => g.Decks);
+  const partners = [];
+  allDecks.forEach(otherDeck => {
+    if (otherDeck === deck) return;
+    const synergy = evaluateSynergy(deck, otherDeck);
+    partners.push({ deck: otherDeck, synergy });
+  });
+  
+  const tierWeight = { 's': 5, 'a': 4, 'b': 3, 'c': 2, 'd': 1 };
+  partners.sort((a, b) => (tierWeight[b.synergy.tier] || 0) - (tierWeight[a.synergy.tier] || 0));
+  
+  const topPartners = partners.slice(0, 4);
+  topPartners.forEach(partner => {
+    const item = document.createElement('div');
+    item.className = 'faction-synergy-item';
+    item.title = `Click to view ${partner.deck} detail page`;
+    
+    const partnerIconHtml = getDeckIconHtml(partner.deck, "deck-icon-img", false);
+    const partnerGroup = cardData.CardGroups.find(g => g.Decks.includes(partner.deck)) || { GroupTitle: "Promo" };
+    
+    item.innerHTML = `
+      <div class="faction-synergy-name-col">
+        <span class="modal-deck-emoji">${partnerIconHtml}</span>
+        <span class="faction-synergy-deck-name">${partner.deck}</span>
+      </div>
+      <span class="synergy-tier-badge tier-${partner.synergy.tier}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; cursor: pointer;">${partner.synergy.ratingName}</span>
+    `;
+    
+    item.addEventListener('click', () => {
+      renderFactionModalContent(content, overlay, partner.deck, partnerGroup, showBackButton);
+    });
+    
+    synergiesList.appendChild(item);
+  });
+  
+  synergiesArea.appendChild(synergiesList);
+  gridLayout.appendChild(synergiesArea);
+  
+  content.appendChild(gridLayout);
 }
 
 function openSynergyModal(deck1, deck2, synergy, isRev1, isRev2) {
