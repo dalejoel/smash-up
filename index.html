@@ -128,8 +128,16 @@
               <input type="checkbox" id="titan-filter-check">
               <label for="titan-filter-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Show Only Decks with Titans</label>
             </div>
-            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45; margin: 0;">
+            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45; margin: 0 0 1rem 0;">
               Filters the checklist to display only the expansions and factions that have associated Titan cards.
+            </p>
+            
+            <div style="display: flex; align-items: center; gap: 0.65rem; margin: 0.25rem 0 0.5rem 0; cursor: pointer; user-select: none;">
+              <input type="checkbox" id="rebalanced-filter-check">
+              <label for="rebalanced-filter-check" style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">Prefer Rebalanced Factions <span class="revamped-badge" style="font-size: 0.7rem; margin-left: 0.5rem;">✨</span></label>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45; margin: 0;">
+              Automatically selects the official updated/rebalanced printings for eligible factions.
             </p>
           </div>
           <div id="error-container"></div>

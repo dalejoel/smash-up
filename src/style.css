@@ -1158,6 +1158,48 @@ input[type="checkbox"] {
   vertical-align: middle;
 }
 
+/* Inline Variant Toggle */
+.deck-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.deck-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.variant-toggle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  user-select: none;
+}
+
+.variant-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.variant-toggle-btn.is-rebalanced {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+}
+
 .header-nav {
   display: flex;
   gap: 0.5rem;

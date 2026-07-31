@@ -15,6 +15,7 @@ if ('serviceWorker' in navigator) {
 
 let cardData = { CardGroups: [] };
 let selectedDecks = new Set();
+let rebalancedDecks = new Set();
 
 // Fun emoji mapping for visual feedback on drawn decks
 const emojiMap = {
@@ -1025,7 +1026,7 @@ function renderExpansionModalContent(content, overlay, group) {
     item.title = `Click to view ${deck} detail page & top synergies`;
     
     const iconHtml = getDeckIconHtml(deck, "deck-icon-img", false);
-    const isRevised = revisedFactions.includes(deck);
+    const isRevised = rebalancedDecks.has(deck);
     const badgeHtml = isRevised ? '<span class="revamped-badge">✨ Revamped</span>' : '';
     const desc = deckDescriptions[deck] || "No description available for this faction.";
     
@@ -1118,7 +1119,7 @@ function renderFactionModalContent(content, overlay, deck, group, showBackButton
   const headerArea = document.createElement('div');
   headerArea.className = 'faction-header-area';
   
-  const isRevised = revisedFactions.includes(deck);
+  const isRevised = rebalancedDecks.has(deck);
   const badgeHtml = isRevised ? '<span class="revamped-badge">✨ Revamped</span>' : '';
   
   headerArea.innerHTML = `
@@ -1295,7 +1296,6 @@ const profiles = {
       "World Tour: Culture Shock",
       "Goblins Promo Deck",
       "Knights of the Round Table Promo Deck",
-      "Teens Promo Deck",
       "Clowns Promo Deck",
       "Slashers Promo Deck",
       "Half the Battle"
@@ -1317,6 +1317,8 @@ function applyProfile(profileId) {
   const titanFilterCheck = document.getElementById('titan-filter-check');
   const filterTitans = titanFilterCheck ? titanFilterCheck.checked : false;
 
+  const rebalancedFilterCheck = document.getElementById('rebalanced-filter-check');
+
   if (profileId === 'custom') {
     const savedDecks = localStorage.getItem('smashup-custom-decks');
     if (savedDecks) {
@@ -1327,7 +1329,29 @@ function applyProfile(profileId) {
         }
       });
     }
+    const savedReb = localStorage.getItem('smashup-rebalanced-decks');
+    rebalancedDecks.clear();
+    if (savedReb) {
+      JSON.parse(savedReb).forEach(deck => rebalancedDecks.add(deck));
+    }
+    
+    // Update global toggle visually if all eligible are active
+    if (rebalancedFilterCheck) {
+      rebalancedFilterCheck.checked = revisedFactions.every(d => rebalancedDecks.has(d));
+    }
     return;
+  }
+
+  // Handle preset profiles
+  if (rebalancedFilterCheck) {
+    // Joel-dale profile automatically prefers rebalanced factions
+    rebalancedFilterCheck.checked = profileId === 'joel-dale';
+  }
+  const preferRebalanced = rebalancedFilterCheck ? rebalancedFilterCheck.checked : false;
+  
+  rebalancedDecks.clear();
+  if (preferRebalanced) {
+    revisedFactions.forEach(deck => rebalancedDecks.add(deck));
   }
 
   selectedDecks.clear();
@@ -1352,6 +1376,7 @@ function handleSelectionChange() {
     localStorage.setItem('smashup-profile', 'custom');
   }
   localStorage.setItem('smashup-custom-decks', JSON.stringify([...selectedDecks]));
+  localStorage.setItem('smashup-rebalanced-decks', JSON.stringify([...rebalancedDecks]));
   updateCounts();
 }
 
@@ -1489,6 +1514,12 @@ function renderExpansions() {
       deckCheck.type = 'checkbox';
       deckCheck.checked = isSelected;
       
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'deck-item-content';
+      
+      const leftWrapper = document.createElement('div');
+      leftWrapper.className = 'deck-item-left';
+
       const nameSpan = document.createElement('span');
       nameSpan.className = 'deck-name';
       
@@ -1500,18 +1531,37 @@ function renderExpansions() {
       textSpan.className = 'deck-text';
       textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
       
-      if (revisedFactions.includes(deck)) {
-        const badge = document.createElement('span');
-        badge.className = 'revamped-badge';
-        badge.innerHTML = '✨ Revamped';
-        textSpan.appendChild(badge);
-      }
-      
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
+      leftWrapper.appendChild(deckCheck);
+      leftWrapper.appendChild(nameSpan);
+      contentWrapper.appendChild(leftWrapper);
 
-      item.appendChild(deckCheck);
-      item.appendChild(nameSpan);
+      if (revisedFactions.includes(deck)) {
+        const toggleBtn = document.createElement('button');
+        const isRev = rebalancedDecks.has(deck);
+        toggleBtn.className = `variant-toggle-btn ${isRev ? 'is-rebalanced' : ''}`;
+        toggleBtn.textContent = isRev ? 'Rebalanced' : 'Original';
+        
+        toggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (rebalancedDecks.has(deck)) {
+            rebalancedDecks.delete(deck);
+            toggleBtn.classList.remove('is-rebalanced');
+            toggleBtn.textContent = 'Original';
+          } else {
+            rebalancedDecks.add(deck);
+            toggleBtn.classList.add('is-rebalanced');
+            toggleBtn.textContent = 'Rebalanced';
+          }
+          handleSelectionChange();
+        });
+        
+        contentWrapper.appendChild(toggleBtn);
+      }
+
+      item.appendChild(contentWrapper);
       list.appendChild(item);
 
       // Event listener for single deck
@@ -1683,6 +1733,12 @@ function renderExpansions() {
       deckCheck.type = 'checkbox';
       deckCheck.checked = isSelected;
       
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'deck-item-content';
+      
+      const leftWrapper = document.createElement('div');
+      leftWrapper.className = 'deck-item-left';
+
       const nameSpan = document.createElement('span');
       nameSpan.className = 'deck-name';
       
@@ -1694,18 +1750,37 @@ function renderExpansions() {
       textSpan.className = 'deck-text';
       textSpan.textContent = titanMap[deck] ? `${deck} / ${titanMap[deck]}` : deck;
       
-      if (revisedFactions.includes(deck)) {
-        const badge = document.createElement('span');
-        badge.className = 'revamped-badge';
-        badge.innerHTML = '✨ Revamped';
-        textSpan.appendChild(badge);
-      }
-      
       nameSpan.appendChild(iconSpan);
       nameSpan.appendChild(textSpan);
+      leftWrapper.appendChild(deckCheck);
+      leftWrapper.appendChild(nameSpan);
+      contentWrapper.appendChild(leftWrapper);
 
-      item.appendChild(deckCheck);
-      item.appendChild(nameSpan);
+      if (revisedFactions.includes(deck)) {
+        const toggleBtn = document.createElement('button');
+        const isRev = rebalancedDecks.has(deck);
+        toggleBtn.className = `variant-toggle-btn ${isRev ? 'is-rebalanced' : ''}`;
+        toggleBtn.textContent = isRev ? 'Rebalanced' : 'Original';
+        
+        toggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (rebalancedDecks.has(deck)) {
+            rebalancedDecks.delete(deck);
+            toggleBtn.classList.remove('is-rebalanced');
+            toggleBtn.textContent = 'Original';
+          } else {
+            rebalancedDecks.add(deck);
+            toggleBtn.classList.add('is-rebalanced');
+            toggleBtn.textContent = 'Rebalanced';
+          }
+          handleSelectionChange();
+        });
+        
+        contentWrapper.appendChild(toggleBtn);
+      }
+
+      item.appendChild(contentWrapper);
       list.appendChild(item);
 
       deckCheck.addEventListener('change', () => {
@@ -1776,10 +1851,10 @@ function checkValidDraftExists(activeDecks, allowedTiers, numPlayers) {
   let edgeCount = 0;
   for (let i = 0; i < activeDecks.length; i++) {
     const d1 = activeDecks[i];
-    const isRev1 = revisedFactions.includes(d1);
+    const isRev1 = rebalancedDecks.has(d1);
     for (let j = i + 1; j < activeDecks.length; j++) {
       const d2 = activeDecks[j];
-      const isRev2 = revisedFactions.includes(d2);
+      const isRev2 = rebalancedDecks.has(d2);
       const synergy = evaluateSynergy(d1, d2, isRev1, isRev2);
       if (allowedTiers.includes(synergy.tier)) {
         adj.get(d1).push(d2);
@@ -1837,10 +1912,10 @@ function generateRandomDraft(activeDecks, allowedTiers, numPlayers) {
   
   for (let i = 0; i < activeDecks.length; i++) {
     const d1 = activeDecks[i];
-    const isRev1 = revisedFactions.includes(d1);
+    const isRev1 = rebalancedDecks.has(d1);
     for (let j = i + 1; j < activeDecks.length; j++) {
       const d2 = activeDecks[j];
-      const isRev2 = revisedFactions.includes(d2);
+      const isRev2 = rebalancedDecks.has(d2);
       const synergy = evaluateSynergy(d1, d2, isRev1, isRev2);
       if (allowedTiers.includes(synergy.tier)) {
         adj.get(d1).push(d2);
@@ -2010,8 +2085,8 @@ function updateBalanceModeDropdown(isManualToggle = false) {
 
   for (let i = 0; i < activeDecks.length; i++) {
     for (let j = i + 1; j < activeDecks.length; j++) {
-      const isRev1 = revisedFactions.includes(activeDecks[i]);
-      const isRev2 = revisedFactions.includes(activeDecks[j]);
+      const isRev1 = rebalancedDecks.has(activeDecks[i]);
+      const isRev2 = rebalancedDecks.has(activeDecks[j]);
       const synergy = evaluateSynergy(activeDecks[i], activeDecks[j], isRev1, isRev2);
       
       const t = synergy.tier;
@@ -2049,8 +2124,8 @@ function updateBalanceModeDropdown(isManualToggle = false) {
 
   for (let i = 0; i < activeDecks.length; i++) {
     for (let j = i + 1; j < activeDecks.length; j++) {
-      const isRev1 = revisedFactions.includes(activeDecks[i]);
-      const isRev2 = revisedFactions.includes(activeDecks[j]);
+      const isRev1 = rebalancedDecks.has(activeDecks[i]);
+      const isRev2 = rebalancedDecks.has(activeDecks[j]);
       const synergy = evaluateSynergy(activeDecks[i], activeDecks[j], isRev1, isRev2);
       if (activeTiers.includes(synergy.tier)) {
         allowedPairsCount++;
@@ -2223,8 +2298,8 @@ function distributeDecks() {
     card.style.animationDelay = `${index * 80}ms`;
 
     const combo = getComboName(assignment.deck1, assignment.deck2);
-    const isRev1 = revisedFactions.includes(assignment.deck1);
-    const isRev2 = revisedFactions.includes(assignment.deck2);
+    const isRev1 = rebalancedDecks.has(assignment.deck1);
+    const isRev2 = rebalancedDecks.has(assignment.deck2);
     const synergy = evaluateSynergy(assignment.deck1, assignment.deck2, isRev1, isRev2);
 
     card.innerHTML = `
@@ -2429,6 +2504,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         handleSelectionChange();
       }
+      renderExpansions();
+    });
+  }
+
+  const rebalancedFilterCheck = document.getElementById('rebalanced-filter-check');
+  if (rebalancedFilterCheck) {
+    rebalancedFilterCheck.addEventListener('change', () => {
+      rebalancedDecks.clear();
+      if (rebalancedFilterCheck.checked) {
+        revisedFactions.forEach(d => rebalancedDecks.add(d));
+      }
+      handleSelectionChange();
       renderExpansions();
     });
   }
