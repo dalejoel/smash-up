@@ -1728,3 +1728,229 @@ input[type="checkbox"] {
   }
 }
 
+/* Synergy Legend Grid */
+.synergy-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Synergy Legend Horizontal (Draft View) */
+.synergy-legend-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: var(--card-bg);
+  border-radius: 100px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.legend-badge-wrapper {
+  flex-shrink: 0;
+  width: 90px;
+}
+
+.legend-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.legend-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.legend-count {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  min-width: 70px;
+  text-align: center;
+}
+
+/* Custom Combobox Styles */
+.combobox-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.combobox-wrapper.is-open {
+  z-index: 999;
+}
+
+.combobox-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.combobox-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.combobox-trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.selected-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selected-content .placeholder {
+  color: var(--text-secondary);
+}
+
+.combobox-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: #1e293b; /* Solid dark background to prevent bleed-through */
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,0,0,0.2);
+  z-index: 1000;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.combobox-wrapper.is-open .combobox-dropdown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.search-header {
+  padding: 8px;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.options-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.options-list::-webkit-scrollbar {
+  width: 6px;
+}
+.options-list::-webkit-scrollbar-thumb {
+  background-color: var(--card-border);
+  border-radius: 10px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--text-primary);
+}
+
+.option-item:hover, .option-item.is-focused {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.option-item .faction-icon, .selected-content .faction-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.option-item .faction-name, .selected-content .faction-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Layout for Synergy Tester Page */
+@media (min-width: 1024px) {
+  #tester-sidebar {
+    height: auto;
+    overflow: visible;
+  }
+  #tester-sidebar .control-panel-body {
+    overflow-y: visible;
+    padding-right: 0;
+  }
+  .tester-grid {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+}
+
+@media (max-width: 1023px) {
+  .tester-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}

@@ -2340,10 +2340,13 @@ function distributeDecks() {
   playersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+let factionAValue = '';
+let factionBValue = '';
+
 function populateSynergyDropdowns() {
-  const selectA = document.getElementById('faction-a-select');
-  const selectB = document.getElementById('faction-b-select');
-  if (!selectA || !selectB || !cardData || !cardData.CardGroups) return;
+  const listA = document.getElementById('faction-a-list');
+  const listB = document.getElementById('faction-b-list');
+  if (!listA || !listB || !cardData || !cardData.CardGroups) return;
 
   let allDecks = [];
   cardData.CardGroups.forEach(group => {
@@ -2353,57 +2356,106 @@ function populateSynergyDropdowns() {
   });
   allDecks.sort();
 
-  // Only repopulate if it has not been populated yet
-  if (selectA.children.length > 1) return;
+  // Only repopulate if empty
+  if (listA.children.length > 0) return;
 
+  const createOptionHTML = (val, text, nameForIcon) => {
+    const emoji = getEmojiForDeck(nameForIcon);
+    return `
+      <li class="option-item" role="option" data-value="${val}" data-text="${text}">
+        <span class="faction-icon" style="font-size: 1.25rem;">${emoji}</span>
+        <span class="faction-name">${text}</span>
+      </li>
+    `;
+  };
+
+  let htmlStr = '';
   allDecks.forEach(deck => {
     const isRevised = revisedFactions.includes(deck);
     
     if (isRevised) {
-      // Normal option
-      const optANormal = document.createElement('option');
-      optANormal.value = deck;
-      optANormal.textContent = `${deck} (Normal)`;
-      selectA.appendChild(optANormal);
-
-      const optBNormal = document.createElement('option');
-      optBNormal.value = deck;
-      optBNormal.textContent = `${deck} (Normal)`;
-      selectB.appendChild(optBNormal);
-
-      // Revamped option
-      const optARevamped = document.createElement('option');
-      optARevamped.value = `${deck}::revamped`;
-      optARevamped.textContent = `${deck} (Revamped)`;
-      selectA.appendChild(optARevamped);
-
-      const optBRevamped = document.createElement('option');
-      optBRevamped.value = `${deck}::revamped`;
-      optBRevamped.textContent = `${deck} (Revamped)`;
-      selectB.appendChild(optBRevamped);
+      htmlStr += createOptionHTML(deck, `${deck} (Normal)`, deck);
+      htmlStr += createOptionHTML(`${deck}::revamped`, `${deck} (Revamped)`, deck);
     } else {
-      // Standard option
-      const optA = document.createElement('option');
-      optA.value = deck;
-      optA.textContent = deck;
-      selectA.appendChild(optA);
-
-      const optB = document.createElement('option');
-      optB.value = deck;
-      optB.textContent = deck;
-      selectB.appendChild(optB);
+      htmlStr += createOptionHTML(deck, deck, deck);
     }
+  });
+
+  listA.innerHTML = htmlStr;
+  listB.innerHTML = htmlStr;
+
+  setupCombobox('faction-a');
+  setupCombobox('faction-b');
+}
+
+function setupCombobox(idPrefix) {
+  const wrapper = document.getElementById(`${idPrefix}-combobox`);
+  const trigger = document.getElementById(`${idPrefix}-trigger`);
+  const search = document.getElementById(`${idPrefix}-search`);
+  const list = document.getElementById(`${idPrefix}-list`);
+  const selected = document.getElementById(`${idPrefix}-selected`);
+  if (!wrapper || !trigger || !search || !list || !selected) return;
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = wrapper.classList.contains('is-open');
+    document.querySelectorAll('.combobox-wrapper').forEach(w => {
+      w.classList.remove('is-open');
+      const t = w.querySelector('.combobox-trigger');
+      if (t) t.setAttribute('aria-expanded', 'false');
+    });
+    if (!isOpen) {
+      wrapper.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      search.value = '';
+      filterList(list, '');
+      setTimeout(() => search.focus(), 50);
+    }
+  });
+
+  search.addEventListener('click', e => e.stopPropagation());
+  search.addEventListener('input', (e) => filterList(list, e.target.value));
+
+  list.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const item = e.target.closest('.option-item');
+    if (!item) return;
+
+    const val = item.getAttribute('data-value');
+    selected.innerHTML = item.innerHTML;
+    wrapper.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+    
+    if (idPrefix === 'faction-a') factionAValue = val;
+    else factionBValue = val;
+
+    updateSynergyAnalysis();
   });
 }
 
-function updateSynergyAnalysis() {
-  const selectA = document.getElementById('faction-a-select');
-  const selectB = document.getElementById('faction-b-select');
-  const cardContainer = document.getElementById('synergy-result-card');
-  if (!selectA || !selectB || !cardContainer) return;
+function filterList(list, query) {
+  const lowerQuery = query.toLowerCase();
+  Array.from(list.children).forEach(li => {
+    const text = li.getAttribute('data-text').toLowerCase();
+    li.style.display = text.includes(lowerQuery) ? 'flex' : 'none';
+  });
+}
 
-  const valA = selectA.value;
-  const valB = selectB.value;
+// Close combobox when clicking outside
+document.addEventListener('click', () => {
+  document.querySelectorAll('.combobox-wrapper').forEach(w => {
+    w.classList.remove('is-open');
+    const trigger = w.querySelector('.combobox-trigger');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  });
+});
+
+function updateSynergyAnalysis() {
+  const cardContainer = document.getElementById('synergy-result-card');
+  if (!cardContainer) return;
+
+  const valA = factionAValue;
+  const valB = factionBValue;
 
   if (!valA || !valB) return;
 
@@ -2570,13 +2622,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Synergy Tester dropdown change events
-  const selectA = document.getElementById('faction-a-select');
-  const selectB = document.getElementById('faction-b-select');
-  if (selectA && selectB) {
-    selectA.addEventListener('change', updateSynergyAnalysis);
-    selectB.addEventListener('change', updateSynergyAnalysis);
-  }
+  // Synergy Tester dropdown change events are now handled by combobox custom logic
 
   // Mobile Control Panel Collapsibility Toggles
   const panels = document.querySelectorAll('.control-panel');
@@ -2596,4 +2642,70 @@ document.addEventListener('DOMContentLoaded', () => {
       panel.classList.add('collapsed');
     });
   }
+
+  // Render synergy legend counts
+  renderSynergyLegend();
 });
+
+function renderSynergyLegend() {
+  const testerContainer = document.getElementById('synergy-legend-container');
+  const draftContainer = document.getElementById('draft-synergy-legend-container');
+  const draftSection = document.getElementById('draft-legend-section');
+  
+  if (!testerContainer && !draftContainer) return;
+  
+  // Pre-calculated counts across the entire official dataset (excluding variants)
+  const counts = { s: 17, a: 230, b: 718, c: 4561, d: 0, anti: 145 };
+  
+  const tierDetails = {
+    s: { name: "God-Tier", desc: "Game-breaking combinations with perfectly overlapping mechanics." },
+    a: { name: "Strong Synergy", desc: "Highly competitive pairings with powerful synergies." },
+    b: { name: "Good / Stable", desc: "Solid, reliable combinations that function well together." },
+    c: { name: "Workable", desc: "Standard pairings with little direct synergy but no clashes." },
+    d: { name: "Anti-Synergy (Soft)", desc: "Sub-optimal combinations that struggle to build momentum." },
+    anti: { name: "Anti-Synergy (Hard)", desc: "Factions with mechanics that actively work against each other." }
+  };
+
+  const letters = { s: 'S', a: 'A', b: 'B', c: 'C', d: 'D', anti: 'Anti' };
+  
+  const legendHTML = ['s', 'a', 'b', 'c', 'd', 'anti'].map(tier => {
+    const details = tierDetails[tier];
+    return `
+      <div class="legend-item">
+        <div class="legend-badge-wrapper" style="display: flex; justify-content: center;">
+          <span class="synergy-tier-badge tier-${tier}" style="margin: 0; cursor: default; transform: none; font-size: 0.9rem;">
+            ${letters[tier]}-Tier
+          </span>
+        </div>
+        <div class="legend-details">
+          <div class="legend-name">${details.name}</div>
+          <div class="legend-desc">${details.desc}</div>
+        </div>
+        <div class="legend-count" title="${counts[tier]} total pairings found">
+          ${counts[tier]}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (testerContainer) {
+    testerContainer.innerHTML = legendHTML;
+  }
+  
+  if (draftContainer && draftSection) {
+    draftSection.style.display = 'block';
+    
+    // For horizontal draft view, simplify the layout a bit
+    const draftLegendHTML = ['s', 'a', 'b', 'c', 'd', 'anti'].map(tier => {
+      return `
+        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 12px 4px 4px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);">
+          <span class="synergy-tier-badge tier-${tier}" style="margin: 0; cursor: default; transform: none; font-size: 0.8rem; padding: 2px 8px;">
+            ${letters[tier]}-Tier
+          </span>
+          <span style="font-size: 0.85rem; font-weight: 700; color: white;">${counts[tier]}</span>
+        </div>
+      `;
+    }).join('');
+    draftContainer.innerHTML = draftLegendHTML;
+  }
+}

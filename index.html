@@ -167,6 +167,16 @@
           </div>
         </section>
 
+        <!-- Synergy Legend for Draft View -->
+        <section id="draft-legend-section" class="decks-panel" style="margin-top: 1.5rem; display: none;">
+          <div class="decks-header">
+            <h2 class="section-title">Synergy Scale Reference</h2>
+          </div>
+          <div id="draft-synergy-legend-container" class="synergy-legend-horizontal">
+            <!-- Dynamically populated legend -->
+          </div>
+        </section>
+
         <!-- Players Assignments Results (Below checklist on the right) -->
         <section id="players-section" class="players-section" hidden>
           <h2 class="section-title">Distributed Player Decks</h2>
@@ -196,10 +206,22 @@
         <div class="control-panel-body">
           <div class="field-group">
             <label class="field-label">Faction A</label>
-            <div class="select-wrapper">
-              <select id="faction-a-select">
-                <option value="" disabled selected>Select Faction A...</option>
-              </select>
+            <div class="combobox-wrapper" id="faction-a-combobox">
+              <button class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false" id="faction-a-trigger">
+                <div class="selected-content" id="faction-a-selected">
+                  <div class="placeholder">Select Faction A...</div>
+                </div>
+                <svg class="chevron-down" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="combobox-dropdown">
+                <div class="search-header">
+                  <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; margin-left: 10px; margin-top: 10px; color: #94a3b8;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" class="search-input" id="faction-a-search" placeholder="Search factions..." autocomplete="off" />
+                </div>
+                <ul class="options-list" role="listbox" id="faction-a-list">
+                  <!-- Dynamically populated -->
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -209,17 +231,29 @@
 
           <div class="field-group">
             <label class="field-label">Faction B</label>
-            <div class="select-wrapper">
-              <select id="faction-b-select">
-                <option value="" disabled selected>Select Faction B...</option>
-              </select>
+            <div class="combobox-wrapper" id="faction-b-combobox">
+              <button class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false" id="faction-b-trigger">
+                <div class="selected-content" id="faction-b-selected">
+                  <div class="placeholder">Select Faction B...</div>
+                </div>
+                <svg class="chevron-down" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="combobox-dropdown">
+                <div class="search-header">
+                  <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; margin-left: 10px; margin-top: 10px; color: #94a3b8;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <input type="text" class="search-input" id="faction-b-search" placeholder="Search factions..." autocomplete="off" />
+                </div>
+                <ul class="options-list" role="listbox" id="faction-b-list">
+                  <!-- Dynamically populated -->
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <!-- Synergy Tester Right Panel (Results) -->
-      <div class="main-content hidden" id="tester-content">
+      <div class="main-content tester-grid hidden" id="tester-content">
         <section class="decks-panel">
           <div class="decks-header">
             <h2 class="section-title">Synergy Analysis</h2>
@@ -231,6 +265,15 @@
               <h3>Select Factions to Analyze</h3>
               <p>Choose two factions from the sidebar to test their combination potential.</p>
             </div>
+          </div>
+        </section>
+        
+        <section class="decks-panel">
+          <div class="decks-header">
+            <h2 class="section-title">Synergy Scale Reference</h2>
+          </div>
+          <div id="synergy-legend-container" class="synergy-legend-grid">
+            <!-- Dynamically populated legend -->
           </div>
         </section>
       </div>
