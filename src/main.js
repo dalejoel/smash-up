@@ -1292,8 +1292,6 @@ const profiles = {
     excludeGroups: [
       "Smash Up: Disney Edition",
       "Munchkin",
-      "World Tour: International Incident",
-      "World Tour: Culture Shock",
       "Goblins Promo Deck",
       "Knights of the Round Table Promo Deck",
       "Clowns Promo Deck",
