@@ -453,7 +453,7 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
     if (otherFaction === "Kung Fu Fighters") {
       return {
         tier: isVampA ? "a" : "b",
-        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        ratingName: isVampA ? "A-Tier: Strong Synergy" : "B-Tier: Good / Stable",
         text: isVampA
           ? "Vampires (Revamped) generate power counters rapidly, which Kung Fu Fighters can transfer and shift fluidly to create massive threats or break bases."
           : "Vampires generate power counters that Kung Fu Fighters can shift around, though normal Vampires' slower pace makes it less explosive."
@@ -463,7 +463,7 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
       const bothRev = isVampA && isOtherRev;
       return {
         tier: bothRev ? "s" : (isVampA ? "a" : "b"),
-        ratingName: bothRev ? "God-Tier Combo" : (isVampA ? "Strong Synergy" : "Good / Stable"),
+        ratingName: bothRev ? "S-Tier: God-Tier Combo" : (isVampA ? "A-Tier: Strong Synergy" : "B-Tier: Good / Stable"),
         text: bothRev
           ? "God-tier counter-based pairing. Vampires (Revamped) generate counters at high speed to feed the Giant Ants' Titan and abilities, while lowering enemy minion power to make them easy prey."
           : "Both factions center around +1 power counters. Vampires feed the Ants' hunger for counters to trigger their abilities, while Vampires reduce enemy minion power."
@@ -472,14 +472,14 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
     if (otherFaction === "Mad Scientists") {
       return {
         tier: isVampA ? "a" : "b",
-        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        ratingName: isVampA ? "A-Tier: Strong Synergy" : "B-Tier: Good / Stable",
         text: "Mad Scientists place and benefit from power counters, and their strong card draw engine (like Lab Assistant) perfectly compensates for the Vampires' low card draw."
       };
     }
     if (otherFaction === "Zombies") {
       return {
         tier: isVampA ? "a" : "b",
-        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        ratingName: isVampA ? "A-Tier: Strong Synergy" : "B-Tier: Good / Stable",
         text: isVampA
           ? "Vampires (Revamped) has 'Crack of Dusk' to replay power 3 or less minions from the grave, which pairs perfectly with Zombies' recursion to cycle powerful utility minions indefinitely."
           : "Zombies retrieve minions from the discard pile, helping normal Vampires maintain board presence, though they don't share mechanical counter synergies."
@@ -488,7 +488,7 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
     if (otherFaction === "Sharks") {
       return {
         tier: isVampA ? "a" : "b",
-        ratingName: isVampA ? "Strong Synergy" : "Good / Stable",
+        ratingName: isVampA ? "A-Tier: Strong Synergy" : "B-Tier: Good / Stable",
         text: isVampA
           ? "Vampires (Revamped) can lower the power of enemy minions, putting them directly into the execution range of the Sharks' destruction cards to trigger their swarming and power-boosting abilities."
           : "Vampires and Sharks both rely on minion destruction, but normal Vampires compete with Sharks for the killing blows, making the setup a bit clunky."
@@ -695,26 +695,26 @@ function evaluateSynergy(factionA, factionB, isRevampedA = false, isRevampedB = 
   }
 
   let tier = "c";
-  let ratingName = "Standard / Fair";
+  let ratingName = "C-Tier: Standard / Fair";
   
   if (isAntiSynergy) {
     tier = "anti";
-    ratingName = "Anti-Synergy";
+    ratingName = "Anti: Anti-Synergy";
     if (reasons.length === 0) {
       reasons.push("These factions have clashing playstyles, slow pacing, or opposing mechanics that make them clunky or anti-synergistic when played together.");
     }
   } else if (isSubOptimal) {
     tier = "d";
-    ratingName = "Sub-Optimal / Weak";
+    ratingName = "D-Tier: Sub-Optimal / Weak";
   } else if (score >= 4) {
     tier = "a";
-    ratingName = "Strong Synergy";
+    ratingName = "A-Tier: Strong Synergy";
   } else if (score >= 2) {
     tier = "b";
-    ratingName = "Good / Stable";
+    ratingName = "B-Tier: Good / Stable";
   } else {
     tier = "c";
-    ratingName = "Standard / Fair";
+    ratingName = "C-Tier: Standard / Fair";
   }
   
   let text = "";
@@ -968,11 +968,13 @@ function openExpansionModal(group) {
   overlay.appendChild(content);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
+      document.body.style.overflow = '';
       overlay.remove();
     }
   });
   
   document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
 }
 
 function renderExpansionModalContent(content, overlay, group) {
@@ -981,7 +983,10 @@ function renderExpansionModalContent(content, overlay, group) {
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close-btn';
   closeBtn.innerHTML = '&times;';
-  closeBtn.addEventListener('click', () => overlay.remove());
+  closeBtn.addEventListener('click', () => {
+    document.body.style.overflow = '';
+    overlay.remove();
+  });
   content.appendChild(closeBtn);
   
   const modalLayout = document.createElement('div');
@@ -1054,7 +1059,10 @@ function renderFactionModalContent(content, overlay, deck, group, showBackButton
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close-btn';
   closeBtn.innerHTML = '&times;';
-  closeBtn.addEventListener('click', () => overlay.remove());
+  closeBtn.addEventListener('click', () => {
+    document.body.style.overflow = '';
+    overlay.remove();
+  });
   content.appendChild(closeBtn);
   
   // Layout container
@@ -1231,7 +1239,10 @@ function openSynergyModal(deck1, deck2, synergy, isRev1, isRev2) {
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close-btn';
   closeBtn.innerHTML = '&times;';
-  closeBtn.addEventListener('click', () => overlay.remove());
+  closeBtn.addEventListener('click', () => {
+    document.body.style.overflow = '';
+    overlay.remove();
+  });
   content.appendChild(closeBtn);
 
   const title = document.createElement('h3');
@@ -1279,11 +1290,13 @@ function openSynergyModal(deck1, deck2, synergy, isRev1, isRev2) {
   overlay.appendChild(content);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
+      document.body.style.overflow = '';
       overlay.remove();
     }
   });
   
   document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
 }
 
 const profiles = {
@@ -2656,12 +2669,12 @@ function renderSynergyLegend() {
   const counts = { s: 17, a: 230, b: 718, c: 4561, d: 0, anti: 145 };
   
   const tierDetails = {
-    s: { name: "God-Tier", desc: "Game-breaking combinations with perfectly overlapping mechanics." },
+    s: { name: "God-Tier Combo", desc: "Game-breaking combinations with perfectly overlapping mechanics." },
     a: { name: "Strong Synergy", desc: "Highly competitive pairings with powerful synergies." },
     b: { name: "Good / Stable", desc: "Solid, reliable combinations that function well together." },
-    c: { name: "Workable", desc: "Standard pairings with little direct synergy but no clashes." },
-    d: { name: "Anti-Synergy (Soft)", desc: "Sub-optimal combinations that struggle to build momentum." },
-    anti: { name: "Anti-Synergy (Hard)", desc: "Factions with mechanics that actively work against each other." }
+    c: { name: "Standard / Fair", desc: "Standard pairings with little direct synergy but no clashes." },
+    d: { name: "Sub-Optimal / Weak", desc: "Sub-optimal combinations that struggle to build momentum." },
+    anti: { name: "Anti-Synergy", desc: "Factions with mechanics that actively work against each other." }
   };
 
   const letters = { s: 'S', a: 'A', b: 'B', c: 'C', d: 'D', anti: 'Anti' };
