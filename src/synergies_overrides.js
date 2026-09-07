@@ -45,9 +45,9 @@ export const synergiesOverrides = {
     text: "Both factions focus on treasures and Victory Points. Thieves steal resources while Aladdin turns them into board control and VP."
   },
   "Aliens / Backtimers": {
-    tier: "a",
-    ratingName: "Strong Synergy",
-    text: "Backtimers manipulate time and replay cards, allowing you to bounce Aliens' Invaders and return them to the board repeatedly for extra VP."
+    tier: "anti",
+    ratingName: "Anti: Anti-Synergy",
+    text: "Backtimers rely on placing cards in Stasis for delayed effects. Aliens focus on bouncing cards back to hand, which actively disrupts Stasis setups and resets the Backtimers' delays, making this pairing very clunky."
   },
   "Aliens / Frozen": {
     tier: "a",
